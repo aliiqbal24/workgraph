@@ -1,0 +1,16 @@
+name: Verify Workgraph
+on: [push, pull_request]
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Linux sandbox
+        run: sudo apt-get update && sudo apt-get install -y bubblewrap
+      - name: Run acceptance checks
+        run: python -m unittest discover -s tests -v
+      - name: Run complete guided example
+        run: python -m workgraph demo --complete > /tmp/workgraph-example.json

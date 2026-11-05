@@ -1,0 +1,6 @@
+{
+  "name": "workgraph",
+  "version": "1.0.0",
+  "description": "Persistent engineering work, exact dependencies, and checked candidates across sessions.",
+  "author": {"name": "Workgraph contributors"}
+}
