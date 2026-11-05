@@ -12,7 +12,7 @@ LLM API dependency, cloud account, telemetry, or owned credentials.
 
 ## Try the complete example
 
-Requirements: Linux, Python 3.11+, Git 2.38+, and working `bubblewrap` (`bwrap`).
+Requirements: Linux, Python 3.11+, Git 2.43+, and working `bubblewrap` (`bwrap`).
 The default check and managed terminal modes fail closed when their sandbox is
 unavailable. This release is tested on Linux; Windows is not supported.
 

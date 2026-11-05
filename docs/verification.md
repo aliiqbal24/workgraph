@@ -33,10 +33,18 @@ manifest, runtime discovery, isolated import, and actual registration.
 initialize the stdio server, discover its tool, checkpoint a real edit, replay a
 request, and verify that an agent cannot call operator acceptance.
 
-Native execution capture must additionally be exercised through the installed
-Hermes tool pipeline. Doctor alone proves registration, not execution behavior.
-The release verification record and submission materials should distinguish those
-checks from any live model run.
+Native execution was additionally exercised through an actual Hermes 0.21.0
+oneshot session on November 5, 2026. The session resumed an attached attempt,
+created `native-proof.txt` through `write_file`, read it through a sandboxed
+terminal command, and saved an explicit plan, decision, and open question.
+Both tool operations have captured native receipts. The attempt finished paused;
+the original checkout remained untouched. This live run is separate from the
+scripted guided example and from Doctor's registration check. The machine-local
+verification record is retained in the release production project.
+
+The release also passed a clean wheel install and the complete terminal example
+from outside the source checkout. Python 3.14.7/Git 2.55.0 were used for the core
+suite; the real MCP client and Hermes runtime used Python 3.11.16.
 
 ## Scope
 

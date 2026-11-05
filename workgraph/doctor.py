@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import shutil
 
@@ -29,5 +30,6 @@ def inspect(repo):
             warnings.append({"code": "NO_REQUIRED_CHECKS", "message": "Acceptance is unavailable until an operator configures a required check."})
     return {"ok": not issues, "repository": str(engine.repo), "version": "1.0.0", "database": integrity,
             "issues": issues, "warnings": warnings, "pending": pending,
-            "sandbox": "bubblewrap" if shutil.which("bwrap") else "cooperative process mode",
+            "sandbox": "unsafe operator opt-in" if os.environ.get("WORKGRAPH_UNSAFE_LOCAL") == "1" else
+                       ("bubblewrap" if shutil.which("bwrap") else "unavailable; managed execution blocked"),
             "runtimes": {name: bool(shutil.which(binary)) for name, binary in (("hermes", "hermes"), ("codex", "codex"), ("claude", "claude"))}}
