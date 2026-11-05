@@ -1,0 +1,7 @@
+An agent session ends. Its work shouldn't.
+
+Workgraph keeps unfinished code, decisions, questions, and exact dependencies together—then requires checked evidence before one clean Git commit.
+
+Native Hermes plugin. Local-first. Ordinary Git.
+
+Built for @NousResearch. Demo below.

@@ -10,6 +10,8 @@ V1 includes a native **Hermes plugin**, a shared **MCP tool** for Codex and Clau
 Code, optional lifecycle hooks, a CLI, and a private visual workspace. It has no
 LLM API dependency, cloud account, telemetry, or owned credentials.
 
+![Workgraph preserves unfinished work and explicit handoff context](docs/images/workspace.webp)
+
 ## Try the complete example
 
 Requirements: Linux, Python 3.11+, Git 2.43+, and working `bubblewrap` (`bwrap`).
@@ -61,6 +63,8 @@ workgraph --repo /path/to/project compose REVISION_ID
 Dependencies pin exact revisions. When a selected dependency advances, dependent
 attempts become visibly outdated. Reconciliation creates a new workspace and
 preserves the old attempt; it can merge text while leaving behavior to repair.
+
+![An independent check catches a broken composition and blocks acceptance](docs/images/blocked-check.webp)
 
 ## Hermes
 
