@@ -1,5 +1,6 @@
 """User-story invariants: old versions, isolated directions and explicit combination."""
 import io
+import zipfile
 import json
 from pathlib import Path
 import subprocess
@@ -7,6 +8,7 @@ import sys
 import tempfile
 import time
 import unittest
+from urllib.request import urlopen
 from unittest.mock import patch
 import contextlib
 
@@ -14,6 +16,7 @@ from workgraph.engine import WorkgraphError
 from workgraph.playground import Playground
 from workgraph.studio import Studio
 from workgraph.jobs import Jobs
+from workgraph.preview import Previews
 from workgraph.api import Router
 from workgraph.cli import main
 
@@ -107,7 +110,7 @@ class StudioTests(unittest.TestCase):
         jobs=Jobs(self.studio);self.addCleanup(jobs.close)
         def invocation(attempt,runtime,query):
             return [sys.executable,"-c","from pathlib import Path; Path('job-proof.txt').write_text('real child output'); print('done')"]
-        with patch("workgraph.launch.command",return_value=([],Path('.'))),patch("workgraph.jobs.shutil.which",return_value="runtime"),patch.object(jobs,"invocation",side_effect=invocation):
+        with patch("workgraph.launch.validate_runtime",return_value="runtime"),patch.object(jobs,"invocation",side_effect=invocation):
             result=jobs.start(self.refs["warm"],"Subprocess proof","hermes","Write proof",request_id="job-replay")
             for thread in jobs.threads:thread.join(timeout=15)
             state=self.studio.history();job=next(j for j in state["jobs"] if j["id"]==result["job"])
@@ -129,7 +132,7 @@ class StudioTests(unittest.TestCase):
         jobs=Jobs(self.studio);self.addCleanup(jobs.close)
         def invocation(attempt,runtime,query):
             return [sys.executable,"-c","from pathlib import Path; import time; Path('partial.txt').write_text('keep this work'); print('started',flush=True); time.sleep(30)"]
-        with patch("workgraph.launch.command",return_value=([],Path('.'))),patch("workgraph.jobs.shutil.which",return_value="runtime"),patch.object(jobs,"invocation",side_effect=invocation):
+        with patch("workgraph.launch.validate_runtime",return_value="runtime"),patch.object(jobs,"invocation",side_effect=invocation):
             result=jobs.start(self.refs["warm"],"Partial work","hermes","Write then pause")
             deadline=time.monotonic()+5
             while not (Path(result["workspace"])/"partial.txt").exists() and time.monotonic()<deadline:time.sleep(.02)
@@ -170,6 +173,99 @@ class StudioTests(unittest.TestCase):
         with self.assertRaises(WorkgraphError) as raised:
             self.studio.continue_path(self.refs["warm"],"hermes","Try again")
         self.assertEqual(raised.exception.code,"EARLIER_VERSION")
+
+    def test_agent_advancing_same_path_does_not_move_a_chosen_favorite(self):
+        self.studio.choose(self.refs["warm"])
+        continued=self.studio.continue_path(self.refs["busy"],"codex","Continue the later idea")
+        (Path(continued["workspace"])/"later.txt").write_text("New work on the same path")
+        result=self.engine.checkpoint(continued["attempt"],"Later agent result",session=continued["session"])
+        self.assertEqual(self.studio.history()["current"],self.refs["warm"])
+        self.studio.choose(result["revision"])
+        self.assertEqual(self.studio.history()["current"],result["revision"])
+
+    def test_download_contains_exact_regular_files_and_preserves_executable_mode(self):
+        branch=self.studio.branch(self.refs["warm"],"Portable version")
+        root=Path(branch["workspace"])
+        (root/"binary.dat").write_bytes(b"\x00\xff\x13saved binary\x00")
+        (root/"run.sh").write_text("#!/bin/sh\necho saved\n");(root/"run.sh").chmod(0o755)
+        (root/"outside-link").symlink_to(Path(self.temp.name)/"not-project-data")
+        revision=self.engine.checkpoint(branch["attempt"],"Portable",select=False)["revision"]
+        index=self.engine.git("write-tree")
+        archive=self.studio.archive(revision)
+        with zipfile.ZipFile(io.BytesIO(archive)) as z:
+            self.assertEqual(z.read("binary.dat"),b"\x00\xff\x13saved binary\x00")
+            self.assertEqual(z.read("components/hero.js"),self.studio.read(revision,"components/hero.js"))
+            self.assertEqual((z.getinfo("run.sh").external_attr>>16)&0o777,0o755)
+            self.assertNotIn("outside-link",z.namelist())
+            self.assertTrue(all(not p.startswith("/") and ".git" not in Path(p).parts and ".." not in Path(p).parts for p in z.namelist()))
+        self.assertEqual(index,self.engine.git("write-tree"))
+        with patch.object(self.studio,"files",return_value={"big":{"size":100_000_001}}):
+            with self.assertRaises(WorkgraphError):self.studio.archive(revision)
+
+    def test_unavailable_runtime_does_not_create_or_take_over_a_path(self):
+        jobs=Jobs(self.studio);self.addCleanup(jobs.close)
+        before=self.studio.history()
+        with patch("workgraph.launch.validate_runtime",side_effect=WorkgraphError("PLUGIN_NOT_ENABLED","Install the plugin")):
+            with self.assertRaises(WorkgraphError):jobs.start(self.refs["busy"],"Original","hermes","Continue",reuse_path=True)
+        after=self.studio.history()
+        self.assertEqual(before["paths"],after["paths"])
+        self.assertEqual(before["jobs"],after["jobs"])
+        from workgraph.launch import launch
+        with patch("workgraph.launch.validate_runtime",side_effect=WorkgraphError("PLUGIN_NOT_ENABLED","Install the plugin")):
+            with self.assertRaises(WorkgraphError):launch(self.engine.repo,"hermes",intent="Should never create work")
+        self.assertEqual(before["paths"],self.studio.history()["paths"])
+
+    def test_cancelling_a_queued_task_fences_its_unstarted_attempt(self):
+        jobs=Jobs(self.studio);self.addCleanup(jobs.close)
+        jobs.slots.acquire();jobs.slots.acquire()
+        try:
+            with patch("workgraph.launch.validate_runtime",return_value="runtime"),patch.object(jobs,"invocation") as invocation:
+                result=jobs.start(self.refs["warm"],"Queued","codex","Wait before doing anything")
+                jobs.cancel(result["job"])
+                jobs.slots.release();jobs.slots.release()
+                for thread in jobs.threads:thread.join(timeout=10)
+                invocation.assert_not_called()
+            self.assertEqual(self.engine.resume(result["attempt"])["state"],"interrupted")
+            self.assertEqual(self.studio.history()["jobs"][0]["state"],"cancelled")
+        finally:
+            # Return a semaphore left occupied if setup itself failed.
+            while jobs.slots.acquire(blocking=False):pass
+            jobs.slots.release();jobs.slots.release()
+
+    def test_structural_file_transfers_require_deletions_and_ignore_selection_order(self):
+        path=self.studio.branch(self.refs["warm"],"Structural change");root=Path(path["workspace"])
+        (root/"section").write_text("Originally a file")
+        target=self.engine.checkpoint(path["attempt"],"Before structure",select=False)["revision"]
+        (root/"section").unlink();(root/"section").mkdir();(root/"section/item.txt").write_text("Now a directory")
+        source=self.engine.checkpoint(path["attempt"],"After structure",select=False)["revision"]
+        count=len(self.studio.history()["paths"])
+        with self.assertRaises(WorkgraphError) as error:self.studio.combine(target,source,["section/item.txt"],"Missing deletion")
+        self.assertEqual(error.exception.code,"INCOMPATIBLE_FILES")
+        self.assertEqual(len(self.studio.history()["paths"]),count)
+        combined=self.studio.combine(target,source,["section/item.txt","section"],"File to directory")
+        self.assertEqual(self.studio.read(combined["revision"],"section/item.txt"),b"Now a directory")
+        reversed_result=self.studio.combine(source,target,["section","section/item.txt"],"Directory to file")
+        self.assertEqual(self.studio.read(reversed_result["revision"],"section"),b"Originally a file")
+
+    def test_built_static_preview_uses_one_document_root_for_html_css_and_modules(self):
+        path=self.studio.branch(self.refs["warm"],"Built static app");root=Path(path["workspace"])
+        (root/"index.html").unlink();(root/"dist/assets").mkdir(parents=True)
+        (root/"dist/index.html").write_text('<html><head><link href="/assets/theme.css" rel="stylesheet"><script type="module" src="/assets/main.js"></script></head><body></body></html>')
+        (root/"dist/assets/theme.css").write_text('body{background-image:url("/assets/swatch.svg")}')
+        (root/"dist/assets/main.js").write_text('import {label} from "/assets/module.js";document.body.textContent=label')
+        (root/"dist/assets/module.js").write_text('export const label="Built preview"')
+        (root/"dist/assets/swatch.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg"/>')
+        revision=self.engine.checkpoint(path["attempt"],"Built",select=False)["revision"]
+        previews=Previews(self.studio);previews.start(8731)
+        try:
+            prefix=f"/{previews.ticket}/{revision}/dist/"
+            def read(file):
+                with urlopen(previews.base+"/"+revision+"/dist/"+file) as response:return response.read().decode()
+            self.assertIn('href="'+prefix+'assets/theme.css"',read("index.html"))
+            self.assertIn('url("'+prefix+'assets/swatch.svg")',read("assets/theme.css"))
+            self.assertIn('from "'+prefix+'assets/module.js"',read("assets/main.js"))
+            self.assertIn('Built preview',read("assets/module.js"))
+        finally:previews.close()
 
 
 if __name__=="__main__":unittest.main()

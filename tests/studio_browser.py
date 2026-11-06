@@ -4,8 +4,11 @@ from pathlib import Path
 import tempfile
 import threading
 import sys
+import subprocess
+import zipfile
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from workgraph.playground import Playground
+from workgraph.engine import Engine
 from workgraph.server import Application,make_server
 from playwright.sync_api import sync_playwright
 
@@ -76,6 +79,12 @@ def run(output):
                 assert app.studio.read(combined["id"],"components/navigation.js")==app.studio.read(refs["playful"],"components/navigation.js")
                 assert app.studio.history()["current"]==refs["first"]
                 page.get_by_role("button",name="Make current",exact=False).click()
+                with page.expect_download() as exported:
+                    page.get_by_role("button",name="Download this version",exact=False).click()
+                downloaded=output/"chosen-version.zip";exported.value.save_as(downloaded)
+                with zipfile.ZipFile(downloaded) as z:
+                    assert z.read("components/navigation.js")==app.studio.read(refs["playful"],"components/navigation.js")
+                    assert z.read("components/hero.js")==app.studio.read(refs["warm"],"components/hero.js")
                 page.get_by_role("button",name="Continue with an agent",exact=False).click()
                 assert "Warm layout, playful navigation" in page.locator("dialog").inner_text()
                 assert page.get_by_label("Continue with",exact=True).input_value()=="hermes"
@@ -97,8 +106,52 @@ def run(output):
                 page.screenshot(path=str(output/"05-phone.png"))
                 assert not errors,errors
                 assert not console,console
+                # Start from a person's own dirty checkout, rather than a sample.
+                own=Path(directory)/"own-project";own.mkdir()
+                subprocess.run(["git","init","-q","-b","main",str(own)],check=True)
+                (own/"index.html").write_text("<h1>Original page</h1>")
+                (own/".gitignore").write_text("ignored.local\n")
+                subprocess.run(["git","-C",str(own),"add","."],check=True)
+                subprocess.run(["git","-C",str(own),"-c","user.name=Test","-c","user.email=test@localhost","commit","-qm","Initial"],check=True)
+                (own/"index.html").write_text("<h1>My unsaved page</h1>")
+                (own/"notes.txt").write_text("An untracked project file")
+                (own/"ignored.local").write_text("Not part of this saved source")
+                own_engine=Engine(own);own_engine.init();index=own_engine.git("write-tree")
+                own_app=Application(own_engine);own_server=make_server(own_app,0)
+                threading.Thread(target=own_server.serve_forever,daemon=True).start()
+                try:
+                    own_page=browser.new_page(viewport={"width":1440,"height":1000},accept_downloads=True)
+                    own_page.on("pageerror",lambda e:errors.append(str(e)))
+                    own_page.goto(f"http://127.0.0.1:{own_server.server_address[1]}/#token={own_app.token}")
+                    own_page.get_by_role("button",name="Save a starting point",exact=True).click()
+                    own_page.get_by_label("Name this starting point").fill("My real starting point")
+                    own_page.get_by_role("button",name="Save starting point",exact=True).click()
+                    own_page.frame_locator("iframe").first.get_by_role("heading",name="My unsaved page").wait_for()
+                    with own_page.expect_download() as exported:
+                        own_page.get_by_role("button",name="Download this version",exact=False).click()
+                    own_download=output/"own-project.zip";exported.value.save_as(own_download)
+                    with zipfile.ZipFile(own_download) as z:
+                        assert z.read("index.html")==b"<h1>My unsaved page</h1>"
+                        assert z.read("notes.txt")==b"An untracked project file"
+                        assert "ignored.local" not in z.namelist()
+                    assert own_engine.git("write-tree")==index
+                    assert (own/"index.html").read_text()=="<h1>My unsaved page</h1>"
+                    starting=own_app.studio.history()["current"]
+                    built=own_app.studio.branch(starting,"Built static app");built_root=Path(built["workspace"])
+                    (built_root/"index.html").unlink();(built_root/"dist/assets").mkdir(parents=True)
+                    (built_root/"dist/index.html").write_text('<html><head><link rel="stylesheet" href="/assets/theme.css"><script type="module" src="/assets/main.js"></script></head><body></body></html>')
+                    (built_root/"dist/assets/theme.css").write_text('h1{color:rgb(32, 64, 96)}')
+                    (built_root/"dist/assets/main.js").write_text('import {label} from "/assets/module.js";document.body.innerHTML="<h1>"+label+"</h1>"')
+                    (built_root/"dist/assets/module.js").write_text('export const label="Built static preview"')
+                    built_revision=own_engine.checkpoint(built["attempt"],"Built static preview",select=False)["revision"]
+                    own_page.reload();own_page.get_by_role("button",name="Open Built static preview",exact=True).click()
+                    own_page.frame_locator("iframe").first.get_by_role("heading",name="Built static preview",exact=True).wait_for()
+                    assert own_page.frames[1].evaluate('getComputedStyle(document.querySelector("h1")).color')=="rgb(32, 64, 96)"
+                    own_page.close()
+                finally:own_server.shutdown();own_server.server_close()
+                assert not errors,errors
                 browser.close()
-                result={"passed":True,"stories":["recover an earlier version","branch from an exact saved point","compare runnable pages","bring selected changes","prepare cross-runtime continuation"],"combination_preserves_originals":True,"saved_preview_isolation":True,"mobile_overflow":False,"browser_errors":errors,"console_errors":console,"model_calls":0}
+                result={"passed":True,"stories":["recover an earlier version","branch from an exact saved point","compare runnable pages","bring selected changes","prepare cross-runtime continuation"],"own_project_start_and_download":True,"built_static_css_and_modules":True,"combination_download_byte_match":True,"combination_preserves_originals":True,"saved_preview_isolation":True,"mobile_overflow":False,"browser_errors":errors,"console_errors":console,"model_calls":0}
                 (output/"result.json").write_text(json.dumps(result,indent=2));return result
         finally:server.shutdown();server.server_close()
 

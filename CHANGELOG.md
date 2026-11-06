@@ -8,6 +8,9 @@
 - Added operator-started agent tasks from a saved point, progress/output, bounded
   concurrency, cancellation capture, and restart fencing.
 - Added shared history, version, compare, branch and combine tools for agents.
+- Added portable ZIP downloads with exact regular-file bytes and executable modes.
+- Kept human choices fixed across later agent saves; hardened queued cancellation,
+  runtime preflight, and file/directory combination ordering.
 - Added a real static website playground and acceptance coverage for the five
   exploration stories. The engineering workspace remains at `/engineering`.
 

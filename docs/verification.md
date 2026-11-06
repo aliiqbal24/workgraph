@@ -2,12 +2,14 @@
 
 ## Version 1.1 visual exploration
 
-The current suite contains 48 distinct tests, including safe older-version
+The current suite contains 54 distinct tests, including safe older-version
 selection, exact-parent branching, selected-file composition/deletion, preservation
 of unrelated files, immutable source/context, path continuation across workers,
 tool retry identities, runtime exit-code propagation, real subprocess capture,
 cancellation, controller exclusivity, restart fencing, and an absolute MCP launch
-with PYTHONPATH removed.
+with PYTHONPATH removed. Additional quality checks cover a chosen favorite staying
+fixed while that same path advances, exact binary/executable ZIP export, structural
+file/directory transfers, setup failure before path takeover, and queued cancellation.
 
 `tests/studio_browser.py` exercises finding an earlier version, making it current,
 reload persistence, creating a path from an exact point, side-by-side saved pages,
@@ -15,6 +17,10 @@ desktop/phone sizing, combining only Navigation while keeping the original Hero,
 expanded previews, and preparing an agent continuation. It checks sandbox isolation,
 mobile overflow, page errors, and console errors. The earlier engineering browser
 flow remains tested separately at `/engineering`.
+It also opens a new project with unstaged and untracked files through the normal
+empty-state UI, saves and previews those files, downloads both an initial and a
+combined version, and verifies exact ZIP contents without changing the Git index. Built output under dist/ is also checked in the
+browser with root-relative CSS and JavaScript module imports.
 
 An actual UI-started Hermes session changed the sample hero headline and captured
 the result. Codex 0.167.0 then continued the same named path, read saved state through

@@ -4,7 +4,6 @@ import fcntl
 import os
 from pathlib import Path
 import re
-import shutil
 import signal
 import subprocess
 import sys
@@ -42,8 +41,8 @@ class Jobs:
     def start(self,revision,name,runtime,prompt,request_id=None,reuse_path=False):
         if not self.owns_controller:
             raise WorkgraphError("OTHER_CONTROLLER","An existing Workgraph window is managing agent tasks for this project. Start or stop tasks there.")
-        if runtime not in ("hermes","codex","claude") or not shutil.which(runtime):
-            raise WorkgraphError("RUNTIME_MISSING","Install and sign in to the selected agent using its normal setup first.")
+        if runtime not in ("hermes","codex","claude"):
+            raise WorkgraphError("INVALID_RUNTIME","Choose Hermes, Codex, or Claude Code.")
         if not isinstance(prompt,str) or not prompt.strip() or len(prompt)>12000:
             raise WorkgraphError("INVALID_PROMPT","Describe what the agent should try in 1–12,000 characters.")
         def action(key):
@@ -51,9 +50,11 @@ class Jobs:
                 with self.engine.db() as db:
                     if db.execute("SELECT count(*) FROM studio_jobs WHERE state IN ('queued','running')").fetchone()[0]>=6:
                         raise WorkgraphError("QUEUE_FULL","Six agent tasks are already running or waiting. Finish or stop one before starting another.")
-                from .launch import command
+                from .launch import validate_runtime
+                # Validate before creating a path or fencing its existing owner.
+                # Completed request receipts remain replayable after setup changes.
+                validate_runtime(runtime)
                 result=self.studio.continue_path(revision,runtime,prompt,key+":path") if reuse_path else self.studio.branch(revision,name,runtime=runtime,prompt=prompt,request_id=key+":path")
-                command(self.engine,result,runtime)
                 job="job_"+uuid.uuid4().hex[:16]
                 with self.engine.db() as db:
                     now=time.time()
@@ -72,7 +73,9 @@ class Jobs:
 
     def _run(self,job,attempt,prompt):
         with self.slots:
-            if job in self.cancelled:return
+            if job in self.cancelled:
+                self.finish_attempt(attempt,130,False)
+                return
             process=None;timed_out=False;code=1;capture_attempted=False
             try:
                 state=self.engine.resume(attempt["attempt"])
@@ -93,11 +96,11 @@ class Jobs:
                     last_output=""
                     while process.poll() is None:
                         if job in self.cancelled:
-                            os.killpg(process.pid,signal.SIGTERM)
+                            self.signal(process,signal.SIGTERM)
                             break
                         if time.monotonic()>deadline:
                             timed_out=True
-                            os.killpg(process.pid,signal.SIGTERM)
+                            self.signal(process,signal.SIGTERM)
                             self._update(job,error="The agent reached its time limit. Its workspace and saved versions are preserved.")
                             break
                         output.flush()
@@ -107,21 +110,21 @@ class Jobs:
                         time.sleep(.4)
                     try:code=process.wait(timeout=8)
                     except subprocess.TimeoutExpired:
-                        os.killpg(process.pid,signal.SIGKILL);code=process.wait()
+                        self.signal(process,signal.SIGKILL);code=process.wait()
                     raw=(directory/"output.txt").read_text(errors="replace")[-24000:]
                 capture_attempted=True
-                self.finish_attempt(attempt,code,timed_out)
+                self.finish_attempt(attempt,130 if job in self.cancelled else code,timed_out)
                 self._update(job,state="cancelled" if job in self.cancelled else "completed" if code==0 and not timed_out else "failed",output=self.clean(raw),
                     error="The runtime reached its time limit. Partial work is preserved." if timed_out else None if code==0 else "The runtime stopped before completing. Check its output; saved work is preserved.")
             except Exception as error:
                 self._update(job,state="failed",error=f"The agent could not complete ({type(error).__name__}). Saved work is preserved.")
             finally:
                 if process and process.poll() is None:
-                    os.killpg(process.pid,signal.SIGTERM)
+                    self.signal(process,signal.SIGTERM)
                     try:process.wait(timeout=8)
-                    except subprocess.TimeoutExpired:os.killpg(process.pid,signal.SIGKILL);process.wait()
+                    except subprocess.TimeoutExpired:self.signal(process,signal.SIGKILL);process.wait()
                 try:
-                    if not capture_attempted:self.finish_attempt(attempt,code,timed_out)
+                    if not capture_attempted:self.finish_attempt(attempt,130 if job in self.cancelled else code,timed_out)
                 except WorkgraphError:
                     self._update(job,state="failed",error="Saving the final state could not be confirmed. Workspace files remain available; inspect recovery before retrying.")
                 with self.lock:self.processes.pop(job,None)
@@ -131,6 +134,11 @@ class Jobs:
         if saved["state"]=="active":
             self.engine.checkpoint(attempt["attempt"],session=attempt["session"])
             self.engine.transition(attempt["attempt"],"paused" if code==0 and not timed_out else "interrupted",attempt["session"])
+
+    @staticmethod
+    def signal(process,number):
+        try:os.killpg(process.pid,number)
+        except ProcessLookupError:pass  # It may exit between poll() and signaling.
 
     def invocation(self,attempt,runtime,query):
         extra={"hermes":["--oneshot","--query-file",str(query),"--max-turns","14","--run-budget","150"],
@@ -167,7 +175,7 @@ class Jobs:
         self.cancelled.add(job)
         with self.lock:
             process=self.processes.get(job)
-            if process and process.poll() is None:os.killpg(process.pid,signal.SIGTERM)
+            if process and process.poll() is None:self.signal(process,signal.SIGTERM)
         self._update(job,state="cancelled",error="Stopped by you. Saved versions and workspace files are preserved.")
         return {"job":job,"state":"cancelled"}
 

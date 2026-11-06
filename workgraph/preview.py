@@ -18,9 +18,9 @@ def root_urls(text, prefix):
 
 
 class Page(HTMLParser):
-    def __init__(self, source, prefix):
+    def __init__(self, source, base, root=None):
         super().__init__(convert_charrefs=False)
-        self.prefix, self.result, self.in_style = prefix, [], False
+        self.prefix, self.base, self.result, self.in_style = root or base, base, [], False
         self.feed(source)
         self.close()
 
@@ -38,7 +38,7 @@ class Page(HTMLParser):
             revised.append(key if value is None else key+'="'+escape(value,quote=True)+'"')
         self.result.append("<"+tag+(" "+" ".join(revised) if revised else "")+">")
         if tag == "head":
-            self.result.append('<base href="'+self.prefix+'">')
+            self.result.append('<base href="'+self.base+'">')
         self.in_style = tag == "style"
 
     def handle_startendtag(self,tag,attrs):self.handle_starttag(tag,attrs)
@@ -79,14 +79,19 @@ class Previews:
                         prefix=f"/{manager.ticket}/{revision}/"
                         directory=str(PurePosixPath(path).parent)
                         base=prefix+(directory+"/" if directory!="." else "")
+                        # A saved dist/public/web entry is a static document root.
+                        # HTML, CSS and module imports must agree on root URLs.
+                        entry=manager.studio.preview_entry(revision)
+                        document_root=str(PurePosixPath(entry).parent) if entry else "."
+                        root=prefix+(document_root+"/" if document_root!="." else "")
                         if mime=="text/html":
                             source=data.decode("utf-8",errors="replace")
                             if "<head" not in source.lower():source="<head></head>"+source
-                            data="".join(Page(source,base).result).encode()
-                        elif mime=="text/css":data=root_urls(data.decode("utf-8",errors="replace"),prefix).encode()
+                            data="".join(Page(source,base,root).result).encode()
+                        elif mime=="text/css":data=root_urls(data.decode("utf-8",errors="replace"),root).encode()
                         elif mime in ("text/javascript","application/javascript"):
                             source=data.decode("utf-8",errors="replace")
-                            source=re.sub(r'''((?:from\s*|import\s*\(?\s*)['"])/(?!/)''',lambda m:m[1]+prefix,source)
+                            source=re.sub(r'''((?:from\s*|import\s*\(?\s*)['"])/(?!/)''',lambda m:m[1]+root,source)
                             data=source.encode()
                         return self.reply(200,data,mime)
                     except (WorkgraphError,ValueError):return self.reply(404,b"This saved file is unavailable.","text/plain")

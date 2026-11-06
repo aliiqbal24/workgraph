@@ -35,12 +35,16 @@ disclosed; your branching, choices, combinations and agent tasks are real.
 
 - Open a point in the history to inspect its saved page. Star and rename versions
   you want to find again. **Make current** chooses a direction without overwriting
-  files or publishing it.
+  files or publishing it. That exact choice stays fixed while agents explore;
+  choosing an agent's newer result is a separate, deliberate step.
 - **Try another direction** creates one or more fresh paths from that exact point.
   Choose a runtime and instruction to start actual local agent tasks, or create
   paths without running a model.
 - **Compare versions** opens saved pages side by side. Bring explicitly selected
   files from the right into a new path based on the left; both originals survive.
+- **Download this version** exports the chosen saved files as a portable ZIP,
+  without Git metadata or symbolic links. Downloads are limited to 100 MB and
+  10,000 regular files. The original checkout stays intact.
 - **Continue with an agent** supplies the chosen source and explicit saved notes.
   At a path's latest point, the next worker can continue the same named path in a
   fresh workspace. Continuing an earlier point creates a new direction. The
@@ -60,9 +64,7 @@ selected-file transfer is limited to 20 MB.
 
 ![Compare actual saved pages and bring selected changes into another direction](docs/images/compare.webp)
 
-For the earlier engineering example:
-
-For a terminal-only acceptance run:
+For a terminal-only run of the earlier engineering example:
 
 ```bash
 python -m workgraph demo --complete
@@ -75,7 +77,6 @@ The repository needs an initial Git commit.
 
 ```bash
 workgraph --repo /path/to/project init
-workgraph --repo /path/to/project begin 'Migrate the profile API' --runtime hermes
 workgraph --repo /path/to/project serve
 ```
 
@@ -83,11 +84,12 @@ In the visual workspace, **Save a starting point** captures the current tracked
 and non-ignored working files without changing the original checkout/index.
 **Checks & engineering** opens the detailed candidate/acceptance dashboard.
 
-`begin` returns an isolated workspace. Edit there. `snapshot` saves source and
+For direct CLI work, `begin` returns an isolated workspace. Edit there. `snapshot` saves source and
 explicit context; native Hermes also checkpoints managed foreground operations
 automatically. The original checkout and staging index are preserved.
 
 ```bash
+workgraph --repo /path/to/project begin 'Migrate the profile API' --runtime hermes
 workgraph --repo /path/to/project snapshot ATTEMPT_ID 'API response prepared' \
   --next 'Update the client' --decision 'Migrate API and client together' \
   --question 'Which clients still use the old field?'

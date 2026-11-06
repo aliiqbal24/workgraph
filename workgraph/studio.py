@@ -1,10 +1,11 @@
 """Human-facing saved versions and paths, backed by the existing immutable core."""
 from pathlib import Path, PurePosixPath
+import io
 import json
 import os
 import shutil
-import time
 import uuid
+import zipfile
 
 from .errors import WorkgraphError
 
@@ -105,12 +106,9 @@ class Studio:
                 "runtime": attempts[revision["attempt_id"]]["runtime"], "preview_entry": self.preview_entry(revision["id"]),
                 "source": sources.get(revision["id"]), "file_count": len(self.files(revision["id"]))})
         current_id = current[0] if current else next((w["selected_revision"] for w in state["work"] if w["selected_revision"]), None)
-        # A running path advances visibly only when the person chose that path.
-        selected_version = next((v for v in versions if v["id"] == current_id), None)
-        if selected_version:
-            a = next(a for a in reversed(state["attempts"]) if members.get(a["id"],a["id"])==selected_version["path"])
-            if a["head"] and work[a["work_id"]]["selected_revision"] == a["head"]:
-                current_id = a["head"]
+        # A person's chosen point is immutable. Agent results need a new choice,
+        # even when they continue the same path. Core integration selection is
+        # separate from the human's current direction.
         paths={}
         for a in state["attempts"]:
             pid=members.get(a["id"],a["id"])
@@ -144,6 +142,22 @@ class Studio:
                     db.execute("UPDATE studio_notes SET starred=? WHERE revision_id=?", (int(starred), revision))
                 return self.engine._finish(db, key, {"revision": revision, "label": label, "starred": starred}, "version.named", revision)
         return self.engine._request("studio.note", {"revision": revision, "label": label, "starred": starred}, action, request_id)
+
+    def archive(self, revision):
+        """Portable saved source, with no checkout mutation or Git internals."""
+        files=self.files(revision)
+        if len(files)>10000 or sum(f["size"] for f in files.values())>100_000_000:
+            raise WorkgraphError("ARCHIVE_TOO_LARGE","This saved project exceeds the 100 MB / 10,000 file download limit. Use its managed workspace or ordinary Git export.")
+        output=io.BytesIO()
+        with zipfile.ZipFile(output,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=6) as archive:
+            for name,entry in sorted(files.items()):
+                name=self.path(name)
+                item=zipfile.ZipInfo(name,date_time=(1980,1,1,0,0,0))
+                item.create_system=3
+                item.external_attr=(0o100755 if entry["executable"] else 0o100644)<<16
+                item.compress_type=zipfile.ZIP_DEFLATED
+                archive.writestr(item,self.read(revision,name,limit=100_000_000))
+        return output.getvalue()
 
     def choose(self, revision, request_id=None):
         self.revision(revision)
@@ -205,7 +219,7 @@ class Studio:
         for i in range(0, len(parts)-1, 2):
             status, path = parts[i:i+2]
             files.append({"path": path, "status": status, "title": PurePosixPath(path).stem.replace("-", " ").replace("_", " ").capitalize(),
-                          "in_source": path in self.files(right), "transferable": path in self.files(right) or status == "D"})
+                          "in_source": path in self.files(right), "transferable": path in self.files(right) or (status == "D" and path in self.files(left))})
         patch = self.engine.git("diff", "--no-ext-diff", "--no-color", a["tree_oid"], b["tree_oid"])
         return {"left": left, "right": right, "files": files, "patch": patch[:100000], "truncated": len(patch)>100000,
                 "meaning": "Changes that would turn the left saved source into the right saved source."}
@@ -224,16 +238,33 @@ class Studio:
         contents = {p: self.read(source,p) if p in self.files(source) else None for p in paths}
         if sum(len(x) for x in contents.values() if x is not None)>20_000_000:
             raise WorkgraphError("TRANSFER_TOO_LARGE", "Choose fewer files to combine at once.")
+        entries={}
+        for item in self.engine.git("ls-tree","-rz",a["tree_oid"]).split("\0"):
+            if item:
+                meta,path=item.split("\t",1);entries[path]=meta.split()[0]
+        deleted={p for p,c in contents.items() if c is None}
+        # A file becoming a directory (or vice versa) needs its obstructing files
+        # explicitly selected for deletion. Detect this before creating any path.
+        for path,content in contents.items():
+            if content is None:continue
+            blockers=[str(parent) for parent in PurePosixPath(path).parents if str(parent) in entries and str(parent) not in deleted]
+            blockers += [p for p in entries if p.startswith(path+"/") and p not in deleted]
+            if blockers:
+                raise WorkgraphError("INCOMPATIBLE_FILES","Include the matching deletions before bringing these files together, or ask an agent for a finer edit: "+", ".join(blockers[:5]))
         def action(key):
             result = self.branch(target, name, session=session, runtime=runtime, request_id=key+":path")
             root = Path(result["workspace"]).resolve()
-            for path, content in contents.items():
+            # Delete obstructions first; checkbox click order cannot change the result.
+            for path, content in sorted(contents.items(),key=lambda item:(item[1] is not None,-len(PurePosixPath(item[0]).parts))):
                 destination = root / path
                 if not destination.resolve().is_relative_to(root) or destination.is_symlink():
                     raise WorkgraphError("UNSAFE_FILE", "A symbolic link cannot redirect a file transfer.")
                 if content is None:
                     destination.unlink(missing_ok=True)
                 else:
+                    if destination.is_dir():
+                        for directory in sorted((p for p in destination.rglob("*") if p.is_dir()),key=lambda p:len(p.parts),reverse=True):directory.rmdir()
+                        destination.rmdir()
                     destination.parent.mkdir(parents=True,exist_ok=True)
                     destination.write_bytes(content)
                     destination.chmod(0o755 if self.files(source)[path]["executable"] else 0o644)

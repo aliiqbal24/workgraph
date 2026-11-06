@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import secrets
 import threading
-from urllib.parse import urlparse
+from urllib.parse import urlparse,parse_qs
 
 from .engine import Engine, WorkgraphError
 from .example import Example
@@ -102,7 +102,7 @@ def make_server(application, port=8731):
         def log_message(self, *args):
             pass
 
-        def send(self, code, data, content_type="application/json; charset=utf-8"):
+        def send(self, code, data, content_type="application/json; charset=utf-8",download=None):
             body = data if isinstance(data, bytes) else json.dumps(data, ensure_ascii=False).encode()
             self.send_response(code)
             self.send_header("Content-Type", content_type)
@@ -110,6 +110,7 @@ def make_server(application, port=8731):
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("Referrer-Policy", "no-referrer")
+            if download:self.send_header("Content-Disposition",f'attachment; filename="{download}"')
             preview = (application.previews.base or "").split("/",3)[:3]
             origin = "/".join(preview) if preview else "'none'"
             self.send_header("Content-Security-Policy", f"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-src {origin}; frame-ancestors 'none'; base-uri 'none'")
@@ -136,6 +137,13 @@ def make_server(application, port=8731):
 
         def do_GET(self):
             route = urlparse(self.path).path
+            if route=="/api/export":
+                if not self.authorized():return
+                revision=parse_qs(urlparse(self.path).query).get("revision",[""])[0]
+                try:
+                    content=application.studio.archive(revision)
+                    return self.send(200,content,"application/zip",download="workgraph-"+revision[-8:]+".zip")
+                except WorkgraphError as error:return self.send(409,error.as_dict())
             if route == "/favicon.ico":
                 return self.send(204,b"","image/x-icon")
             if route == "/api/studio":

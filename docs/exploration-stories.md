@@ -22,7 +22,8 @@ from that exact point.
 
 Acceptance: an older version renders its saved files; choosing it survives reload;
 the newer version and its context still exist; the original checkout/index do not
-change.
+change. A worker advancing that same path cannot move the person's chosen point.
+The person explicitly reviews and chooses a newer result.
 
 ## Try another direction without losing this one
 
@@ -66,6 +67,12 @@ identified, rather than an automatic promise to understand arbitrary features.
 Acceptance: chosen files come from the selected source, all other target files
 remain byte-identical, deletion is explicit, source versions remain unchanged,
 and previous passing evidence is not attached to the new version.
+File/directory structural changes require the matching explicit deletions and
+behave consistently regardless of the order the person selects files.
+
+The person can download any saved version as a portable archive and use its actual
+files. Export preserves regular-file bytes and executable modes, excludes Git
+metadata and symbolic links, and leaves the original checkout/index untouched.
 
 ## Continue here with another agent
 

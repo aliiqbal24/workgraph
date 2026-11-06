@@ -12,40 +12,40 @@ import uuid
 from .engine import Engine, WorkgraphError
 
 
-def command(engine, attempt, runtime, extra=None):
+def validate_runtime(runtime):
+    if runtime not in ("hermes","codex","claude"):
+        raise WorkgraphError("INVALID_RUNTIME","Choose hermes, codex, or claude.")
+    binary=shutil.which(runtime)
+    if not binary:
+        raise WorkgraphError("RUNTIME_MISSING","Install and sign in to the selected agent using its normal setup first.")
+    if runtime=="hermes":
+        try:
+            result=subprocess.run([binary,"plugins","list","--enabled","--json"],text=True,capture_output=True,timeout=20)
+        except subprocess.TimeoutExpired:
+            raise WorkgraphError("RUNTIME_UNAVAILABLE","Hermes plugin discovery timed out. Open Hermes normally and check its plugin setup.")
+        try:payload=json.loads(result.stdout)
+        except ValueError:payload=[]
+        records=payload if isinstance(payload,list) else payload.get("plugins",[]) if isinstance(payload,dict) else []
+        if not any(isinstance(record,dict) and (record.get("name")=="workgraph" or record.get("key")=="workgraph") for record in records):
+            raise WorkgraphError("PLUGIN_NOT_ENABLED","Install and enable the native Workgraph Hermes plugin before launching. See the installation guide.")
+    return binary
+
+
+def command(engine, attempt, runtime, extra=None, runtime_binary=None):
     package_root = Path(__file__).resolve().parent.parent
     executable = sys.executable
     tool_args = [str(Path(__file__).resolve().parent / "entry.py"), "--repo", str(engine.repo), "mcp", "--session", attempt["session"],
                  "--runtime", runtime, "--attempt", attempt["attempt"]]
+    binary=runtime_binary or validate_runtime(runtime)
     if runtime == "hermes":
-        binary = shutil.which("hermes")
-        if not binary:
-            raise WorkgraphError("RUNTIME_MISSING", "Hermes is not on PATH.")
-        try:
-            result = subprocess.run([binary, "plugins", "list", "--enabled", "--json"], text=True, capture_output=True, timeout=20)
-        except subprocess.TimeoutExpired:
-            raise WorkgraphError("RUNTIME_UNAVAILABLE", "Hermes plugin discovery timed out. Open Hermes normally and check its plugin setup.")
-        try:
-            payload = json.loads(result.stdout)
-        except ValueError:
-            payload = []
-        records = payload if isinstance(payload, list) else payload.get("plugins", [])
-        if not any(record.get("name") == "workgraph" or record.get("key") == "workgraph" for record in records):
-            raise WorkgraphError("PLUGIN_NOT_ENABLED", "Install and enable the native Workgraph Hermes plugin before launching. See the installation guide.")
         argv = [binary, "chat", "--in", attempt["workspace"], "--source", "tool"]
     elif runtime == "codex":
-        binary = shutil.which("codex")
-        if not binary:
-            raise WorkgraphError("RUNTIME_MISSING", "Codex is not on PATH.")
         argv = [binary, "-C", attempt["workspace"], "-c", "mcp_servers.workgraph.command=" + json.dumps(executable),
                 "-c", "mcp_servers.workgraph.args=" + json.dumps(tool_args),
                 "-c", "mcp_servers.workgraph.enabled=true", "-c", "mcp_servers.workgraph.required=true",
                 "-c", "mcp_servers.workgraph.startup_timeout_sec=20",
                 "-c", 'mcp_servers.workgraph.default_tools_approval_mode="writes"']
     elif runtime == "claude":
-        binary = shutil.which("claude")
-        if not binary:
-            raise WorkgraphError("RUNTIME_MISSING", "Claude Code is not on PATH.")
         directory = engine.home / "launches" / hashlib.sha256(attempt["session"].encode()).hexdigest()[:20]
         directory.mkdir(parents=True, exist_ok=True)
         config = directory / "mcp.json"
@@ -58,6 +58,7 @@ def command(engine, attempt, runtime, extra=None):
 
 
 def launch(repo, runtime, intent=None, attempt_id=None, extra=None, print_only=False):
+    runtime_binary=validate_runtime(runtime)
     engine = Engine(repo)
     if not engine.dbpath.exists():
         engine.init()
@@ -70,7 +71,7 @@ def launch(repo, runtime, intent=None, attempt_id=None, extra=None, print_only=F
         if not intent:
             raise WorkgraphError("MISSING_INTENT", "Provide --intent or --attempt.")
         attempt = engine.begin(intent, session="session_" + uuid.uuid4().hex[:16], runtime=runtime)
-    argv, package_root = command(engine, attempt, runtime, extra)
+    argv, package_root = command(engine, attempt, runtime, extra,runtime_binary=runtime_binary)
     result = {"command": argv, **attempt, "runtime": runtime,
               "capture": "native foreground capture" if runtime == "hermes" else "MCP plus final checkpoint; install trusted hooks for per-tool capture"}
     if print_only:
