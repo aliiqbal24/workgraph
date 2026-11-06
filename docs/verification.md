@@ -2,7 +2,7 @@
 
 ## Version 1.1 visual exploration
 
-The current suite contains 55 distinct tests, including safe older-version
+The current suite contains 56 distinct tests, including safe older-version
 selection, exact-parent branching, selected-file composition/deletion, preservation
 of unrelated files, immutable source/context, path continuation across workers,
 tool retry identities, runtime exit-code propagation, real subprocess capture,

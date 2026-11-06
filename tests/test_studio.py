@@ -2,6 +2,7 @@
 import io
 import zipfile
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -255,6 +256,20 @@ class StudioTests(unittest.TestCase):
         version=next(v for v in self.studio.history()["versions"] if v["id"]==revision)
         self.assertIn("saved static build",version["preview_note"])
         self.assertIn("index.html",self.studio.files(revision))
+
+    def test_jobs_and_launcher_preserve_the_host_python_environment(self):
+        from workgraph.launch import launch
+        branch=self.studio.branch(self.refs["warm"],"Portable launch");jobs=Jobs(self.studio);self.addCleanup(jobs.close)
+        argv=jobs.invocation(branch,"codex",Path(self.temp.name)/"request.txt")
+        # Run the actual job entry from another cwd with no module search override.
+        env={k:v for k,v in os.environ.items() if k!="PYTHONPATH"}
+        command=argv[:argv.index("launch")]+["status"]
+        result=subprocess.run(command,cwd=self.temp.name,env=env,capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertIn("repository",json.loads(result.stdout))
+        with patch.dict(os.environ,{"PYTHONPATH":"/operator-owned/python-modules"}),patch("workgraph.launch.validate_runtime",return_value="runtime"),patch("workgraph.launch.command",return_value=(["runtime"],Path('/unused/package-parent'))),patch("workgraph.launch.subprocess.call",return_value=0) as call:
+            launch(self.engine.repo,"codex",attempt_id=branch["attempt"])
+        self.assertEqual(call.call_args.kwargs["env"]["PYTHONPATH"],"/operator-owned/python-modules")
 
     def test_built_static_preview_uses_one_document_root_for_html_css_and_modules(self):
         path=self.studio.branch(self.refs["warm"],"Built static app");root=Path(path["workspace"])

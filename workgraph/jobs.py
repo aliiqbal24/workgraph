@@ -86,7 +86,7 @@ class Jobs:
                 directory=self.engine.home/"agent-jobs"/job;directory.mkdir(parents=True)
                 query=directory/"request.txt";query.write_text(instruction)
                 argv=self.invocation(attempt,state["runtime"],query)
-                env={**os.environ,"PYTHONPATH":str(Path(__file__).resolve().parent.parent)+(os.pathsep+os.environ["PYTHONPATH"] if os.environ.get("PYTHONPATH") else "")}
+                env=os.environ.copy()
                 self._update(job,state="running")
                 # No shell, auto-approval flags, credential reads, or input prompts.
                 with query.open() as stdin, (directory/"output.txt").open("w+") as output:
@@ -144,7 +144,7 @@ class Jobs:
         extra={"hermes":["--oneshot","--query-file",str(query),"--max-turns","14","--run-budget","150"],
                "codex":["exec","--json","--ephemeral","--sandbox","workspace-write","-"],
                "claude":["-p","--output-format","json"]}[runtime]
-        return [sys.executable,"-m","workgraph","--repo",str(self.engine.repo),"launch",runtime,"--attempt",attempt["attempt"],"--",*extra]
+        return [sys.executable,str(Path(__file__).resolve().parent/"entry.py"),"--repo",str(self.engine.repo),"launch",runtime,"--attempt",attempt["attempt"],"--",*extra]
 
     @staticmethod
     def clean(text):

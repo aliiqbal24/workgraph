@@ -71,14 +71,13 @@ def launch(repo, runtime, intent=None, attempt_id=None, extra=None, print_only=F
         if not intent:
             raise WorkgraphError("MISSING_INTENT", "Provide --intent or --attempt.")
         attempt = engine.begin(intent, session="session_" + uuid.uuid4().hex[:16], runtime=runtime)
-    argv, package_root = command(engine, attempt, runtime, extra,runtime_binary=runtime_binary)
+    argv, _ = command(engine, attempt, runtime, extra,runtime_binary=runtime_binary)
     result = {"command": argv, **attempt, "runtime": runtime,
               "capture": "native foreground capture" if runtime == "hermes" else "MCP plus final checkpoint; install trusted hooks for per-tool capture"}
     if print_only:
         return result
     env = {**os.environ, "WORKGRAPH_REPO": str(engine.repo), "WORKGRAPH_ATTEMPT": attempt["attempt"],
-           "WORKGRAPH_SESSION": attempt["session"], "WORKGRAPH_RUNTIME": runtime,
-           "PYTHONPATH": str(package_root) + (os.pathsep + os.environ["PYTHONPATH"] if os.environ.get("PYTHONPATH") else "")}
+           "WORKGRAPH_SESSION": attempt["session"], "WORKGRAPH_RUNTIME": runtime}
     print(f"Workgraph attached: {attempt['attempt']}\nWorkspace: {attempt['workspace']}\n", file=sys.stderr, flush=True)
     code = 130
     try:
