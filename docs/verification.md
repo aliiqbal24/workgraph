@@ -37,6 +37,15 @@ for inspection. The server now has an absolute entry, is required at startup, an
 separates strictly read-only operations from mutation calls. Earlier blocked runs
 remain in the local test history.
 
+The final installed wheel was also tested from outside the checkout through the
+authenticated operator API. Its own isolated Python runtime launched actual
+Hermes and Codex sessions without injecting its package directory into their
+Python environments. Hermes changed only the headline; Codex continued that same
+named path and changed only Navigation, preserving every other file. The chosen
+favorite stayed fixed. The machine-local record is
+`/home/ali/.cache/workgraph/installed-runtime-proof/result.json`.
+The installed `workgraph` command is available on PATH on this machine.
+
 Claude Code uses the same MCP transport/launcher; this record does not claim a live
 Claude model run. Framework app servers and external-service restoration are
 outside the saved static preview contract. No revised demo should imply otherwise.

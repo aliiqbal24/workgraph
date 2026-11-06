@@ -78,7 +78,7 @@ It does not read credential stores or change runtime permissions.
 
 Linux, Python 3.11+, Git 2.43+, and working bubblewrap are required for default
 managed execution. Restored state is captured source and explicit notes, rather
-than hidden model state, external effects, ignored build outputs, or secrets.
+than hidden model state, external effects, ignored build outputs, or credential stores.
 
 The product hypothesis is coherent visual exploration and portable continuation
 with less version-management effort. Existing products already offer checkpoints,

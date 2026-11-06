@@ -235,9 +235,10 @@ so runtime environment filtering cannot silently remove it.
   stored locally. Retry receipts do not retain original terminal output.
 - The plugin reads and writes the selected repository and its managed workspaces,
   runs Git and approved terminal/check commands, and may start a localhost UI.
-- No product data is uploaded. No telemetry or analytics are sent.
+- Workgraph sends no telemetry or analytics and has no hosted data service.
+  Agent runs use the chosen runtime's configured provider and normal data settings.
 - Restoring work restores captured code and explicit notes, not a model's hidden
-  state, running processes, external services, ignored files, or secrets.
+  state, running processes, external services, ignored files, or credential stores.
 - Dependency detection is exact for recorded revisions. It does not infer every
   semantic relationship. Passing checks establish only what those checks cover.
 - Local runner identity and lockfiles are captured; full hermetic reproducibility
