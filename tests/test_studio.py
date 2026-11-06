@@ -64,10 +64,12 @@ class StudioTests(unittest.TestCase):
         self.assertIn("components/footer.js",self.studio.files(self.refs["warm"]))
 
     def test_preview_and_transfer_refuse_metadata_symlinks_and_traversal(self):
-        for path in ("../private",".git/config","/etc/passwd","components/../../bad"):
+        outside=Path(self.temp.name)/"outside-fixture.txt"
+        outside.write_text("fixture data that must remain outside the saved project")
+        for path in ("../private",".git/config",str(outside),"components/../../bad"):
             with self.assertRaises(WorkgraphError):self.studio.read(self.refs["warm"],path)
         branch=self.studio.branch(self.refs["warm"],"A link")
-        (Path(branch["workspace"])/"outside").symlink_to("/etc/passwd")
+        (Path(branch["workspace"])/"outside").symlink_to(outside)
         saved=self.engine.checkpoint(branch["attempt"],"Link",select=False)["revision"]
         self.assertNotIn("outside",self.studio.files(saved))
         with self.assertRaises(WorkgraphError):self.studio.combine(self.refs["warm"],saved,["outside"],"No link")
