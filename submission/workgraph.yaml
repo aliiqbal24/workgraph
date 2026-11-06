@@ -2,22 +2,22 @@
 name: workgraph
 title: Workgraph
 repo: https://github.com/aliiqbal24/workgraph
-sha: 954e5da9245f07cf1087c5d582094b2d0d8bd6b9
-description: Persistent unfinished work across agent sessions, exact dependencies, safe handoffs, and checked Git-compatible candidates. Reads/writes local repositories and runs approved commands.
+sha: e5ca39dcb77891aac8e767f78c817d25a1ae0445
+description: Visual saved versions, exact-point branches, side-by-side static previews, selected-file combinations, downloads, and agent continuation. Reads/writes local repositories and runs approved commands.
 maintainer: aliiqbal24
 tier: community
 category: tools
 requires_hermes: ">=0.21.0"
-version: "1.0.0"
+version: "1.1.0"
 platforms: [linux]
 readme: true
-image: https://raw.githubusercontent.com/aliiqbal24/workgraph/954e5da9245f07cf1087c5d582094b2d0d8bd6b9/docs/images/banner.webp
+image: https://raw.githubusercontent.com/aliiqbal24/workgraph/e5ca39dcb77891aac8e767f78c817d25a1ae0445/docs/images/banner.webp
 screenshots:
-  - https://raw.githubusercontent.com/aliiqbal24/workgraph/954e5da9245f07cf1087c5d582094b2d0d8bd6b9/docs/images/workspace.webp
-  - https://raw.githubusercontent.com/aliiqbal24/workgraph/954e5da9245f07cf1087c5d582094b2d0d8bd6b9/docs/images/blocked-check.webp
+  - https://raw.githubusercontent.com/aliiqbal24/workgraph/e5ca39dcb77891aac8e767f78c817d25a1ae0445/docs/images/explore.webp
+  - https://raw.githubusercontent.com/aliiqbal24/workgraph/e5ca39dcb77891aac8e767f78c817d25a1ae0445/docs/images/compare.webp
 known_issues:
   - Linux, Python 3.11+, Git 2.43+, and working bubblewrap are required for default managed execution.
-  - Managed Hermes V1 supports foreground commands and path-based patches; background commands and execute_code are blocked with guidance.
+  - Saved previews support static regular files; framework servers and external services are not started. Combination transfers whole files.
   - Codex and Claude per-tool capture requires reviewed host lifecycle hooks; launch alone provides MCP and a final checkpoint.
 capabilities:
   provides_tools: [workgraph]

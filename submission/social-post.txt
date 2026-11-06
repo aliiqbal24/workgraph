@@ -1,7 +1,8 @@
-An agent session ends. Its work shouldn't.
+“Keep the earlier layout. Borrow this menu. Let another agent continue.”
 
-Workgraph keeps unfinished code, decisions, questions, and exact dependencies together—then requires checked evidence before one clean Git commit.
+Workgraph makes that a few visible choices: saved pages, separate directions,
+side-by-side comparison, and a way back from every idea.
 
-Native Hermes plugin. Local-first. Ordinary Git.
+Native Hermes plugin. Ordinary Git underneath.
 
-Built for @NousResearch. Demo below.
+Built for @NousResearch. Demo attached.
