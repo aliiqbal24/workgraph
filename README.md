@@ -58,6 +58,9 @@ browser sandbox. Static projects with index.html (including dist/public/web
 entries) work without installing dependencies or starting app processes. Arbitrary
 framework servers, databases, and external services are not launched. Other
 projects retain saved files, history, comparison, branching and agent continuation.
+An existing saved dist/index.html takes priority over the source index. Detected
+TypeScript/JSX source entry points explain the need for a saved build; previewing
+does not compile them or silently start a development server.
 Browser sandboxing is not a hostile-code VM or a guarantee against every form of
 network navigation. Individual preview/transfer files are limited to 4 MB; a
 selected-file transfer is limited to 20 MB.

@@ -8,7 +8,7 @@ on_session_finalize, and tool_request/tool_execution middleware. It bundles an
 optional skill and uses public APIs. Codex/Claude use the same core through stdio
 MCP; a strictly read-only tool separates inspection from writes requiring approval.
 
-Validation: 54 automated tests, full Chromium story flows, own dirty-project start
+Validation: 55 automated tests, full Chromium story flows, own dirty-project start
 and exact archive export, real MCP SDK interoperability, clean wheel install and
 complete engineering example, Hermes Plugin Doctor, actual native execution, and
 an actual UI-started Hermes-to-Codex continuation. The headline from Hermes stayed

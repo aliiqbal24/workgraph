@@ -247,15 +247,25 @@ class StudioTests(unittest.TestCase):
         reversed_result=self.studio.combine(source,target,["section","section/item.txt"],"Directory to file")
         self.assertEqual(self.studio.read(reversed_result["revision"],"section"),b"Originally a file")
 
+    def test_unbuilt_framework_source_has_an_explanation_instead_of_a_blank_preview(self):
+        path=self.studio.branch(self.refs["warm"],"Framework source");root=Path(path["workspace"])
+        (root/"index.html").write_text('<html><head><script type="module" src="/src/main.tsx"></script></head><body><div id="root"></div></body></html>')
+        revision=self.engine.checkpoint(path["attempt"],"Unbuilt source",select=False)["revision"]
+        self.assertIsNone(self.studio.preview_entry(revision))
+        version=next(v for v in self.studio.history()["versions"] if v["id"]==revision)
+        self.assertIn("saved static build",version["preview_note"])
+        self.assertIn("index.html",self.studio.files(revision))
+
     def test_built_static_preview_uses_one_document_root_for_html_css_and_modules(self):
         path=self.studio.branch(self.refs["warm"],"Built static app");root=Path(path["workspace"])
-        (root/"index.html").unlink();(root/"dist/assets").mkdir(parents=True)
+        (root/"index.html").write_text('<script type="module" src="/src/main.tsx"></script>');(root/"dist/assets").mkdir(parents=True)
         (root/"dist/index.html").write_text('<html><head><link href="/assets/theme.css" rel="stylesheet"><script type="module" src="/assets/main.js"></script></head><body></body></html>')
         (root/"dist/assets/theme.css").write_text('body{background-image:url("/assets/swatch.svg")}')
         (root/"dist/assets/main.js").write_text('import {label} from "/assets/module.js";document.body.textContent=label')
         (root/"dist/assets/module.js").write_text('export const label="Built preview"')
         (root/"dist/assets/swatch.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg"/>')
         revision=self.engine.checkpoint(path["attempt"],"Built",select=False)["revision"]
+        self.assertEqual(self.studio.preview_entry(revision),"dist/index.html")
         previews=Previews(self.studio);previews.start(8731)
         try:
             prefix=f"/{previews.ticket}/{revision}/dist/"

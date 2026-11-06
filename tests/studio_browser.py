@@ -138,7 +138,7 @@ def run(output):
                     assert (own/"index.html").read_text()=="<h1>My unsaved page</h1>"
                     starting=own_app.studio.history()["current"]
                     built=own_app.studio.branch(starting,"Built static app");built_root=Path(built["workspace"])
-                    (built_root/"index.html").unlink();(built_root/"dist/assets").mkdir(parents=True)
+                    (built_root/"index.html").write_text('<script type="module" src="/src/main.tsx"></script>');(built_root/"dist/assets").mkdir(parents=True)
                     (built_root/"dist/index.html").write_text('<html><head><link rel="stylesheet" href="/assets/theme.css"><script type="module" src="/assets/main.js"></script></head><body></body></html>')
                     (built_root/"dist/assets/theme.css").write_text('h1{color:rgb(32, 64, 96)}')
                     (built_root/"dist/assets/main.js").write_text('import {label} from "/assets/module.js";document.body.innerHTML="<h1>"+label+"</h1>"')

@@ -1,5 +1,6 @@
 """Human-facing saved versions and paths, backed by the existing immutable core."""
 from pathlib import Path, PurePosixPath
+from html.parser import HTMLParser
 import io
 import json
 import os
@@ -33,10 +34,27 @@ CREATE TABLE IF NOT EXISTS studio_jobs (
 '''
 
 
+class _EntryProbe(HTMLParser):
+    def __init__(self,source):
+        super().__init__()
+        self.requires_build="%PUBLIC_URL%" in source
+        self.feed(source)
+        self.close()
+
+    def handle_starttag(self,tag,attrs):
+        if tag!="script":return
+        src=dict(attrs).get("src") or ""
+        path=src.split("?",1)[0].split("#",1)[0]
+        if PurePosixPath(path).suffix.lower() in (".ts",".tsx",".jsx",".vue",".svelte") or path=="/@vite/client":
+            self.requires_build=True
+
+
 class Studio:
     def __init__(self, engine):
         self.engine = engine
         self._files = {}
+        self._preview_entries = {}
+        self._preview_notes = {}
         with engine.store.lock(), engine.db() as db:
             db.executescript(SCHEMA)
 
@@ -83,8 +101,19 @@ class Studio:
         return self.engine.git("cat-file", "blob", entry["oid"], binary=True)
 
     def preview_entry(self, key):
-        files = self.files(key)
-        return next((x for x in ("index.html", "dist/index.html", "public/index.html", "web/index.html") if x in files), None)
+        if key not in self._preview_entries:
+            files=self.files(key);entry=None;note="This project has no saved static web entry to preview."
+            # Prefer a saved production build over a framework's source index.
+            for candidate in ("dist/index.html","index.html","public/index.html","web/index.html"):
+                if candidate not in files:continue
+                if files[candidate]["size"]>4_000_000:
+                    note="This saved page exceeds the 4 MB preview limit.";continue
+                source=self.read(key,candidate).decode("utf-8",errors="replace")
+                if _EntryProbe(source).requires_build:
+                    note="This app needs a saved static build to preview. Its source, history, and agent tools are ready.";continue
+                entry=candidate;note="";break
+            self._preview_entries[key]=entry;self._preview_notes[key]=note
+        return self._preview_entries[key]
 
     def history(self):
         state = self.engine.status()
@@ -103,7 +132,7 @@ class Studio:
             versions.append({"id": revision["id"], "parent": revision["parent"], "path": members.get(revision["attempt_id"],revision["attempt_id"]),"attempt":revision["attempt_id"],
                 "work": revision["work_id"], "title": note.get("label") or revision["context"].get("summary") or "Saved version",
                 "starred": bool(note.get("starred")), "created": revision["created"], "context": revision["context"],
-                "runtime": attempts[revision["attempt_id"]]["runtime"], "preview_entry": self.preview_entry(revision["id"]),
+                "runtime": attempts[revision["attempt_id"]]["runtime"], "preview_entry": self.preview_entry(revision["id"]),"preview_note":self._preview_notes[revision["id"]],
                 "source": sources.get(revision["id"]), "file_count": len(self.files(revision["id"]))})
         current_id = current[0] if current else next((w["selected_revision"] for w in state["work"] if w["selected_revision"]), None)
         # A person's chosen point is immutable. Agent results need a new choice,

@@ -2,7 +2,7 @@
 
 ## Version 1.1 visual exploration
 
-The current suite contains 54 distinct tests, including safe older-version
+The current suite contains 55 distinct tests, including safe older-version
 selection, exact-parent branching, selected-file composition/deletion, preservation
 of unrelated files, immutable source/context, path continuation across workers,
 tool retry identities, runtime exit-code propagation, real subprocess capture,
@@ -20,7 +20,9 @@ flow remains tested separately at `/engineering`.
 It also opens a new project with unstaged and untracked files through the normal
 empty-state UI, saves and previews those files, downloads both an initial and a
 combined version, and verifies exact ZIP contents without changing the Git index. Built output under dist/ is also checked in the
-browser with root-relative CSS and JavaScript module imports.
+browser with root-relative CSS and JavaScript module imports. A saved build wins
+over an uncompiled source index; detected TypeScript/JSX entry points without a
+saved build show a useful explanation while retaining all source tools.
 
 An actual UI-started Hermes session changed the sample hero headline and captured
 the result. Codex 0.167.0 then continued the same named path, read saved state through
