@@ -27,6 +27,13 @@ def run(output):
                 page.on("console",lambda m:console.append(m.text) if m.type=="error" else None)
                 page.goto(address);page.get_by_text("Connected locally",exact=True).wait_for()
                 page.frame_locator("iframe").first.get_by_role("heading",name="A little warmth. A lot of home.").wait_for()
+                page.get_by_role("button",name="Find a version",exact=False).click()
+                page.get_by_label("Find a saved version",exact=True).fill("busier")
+                # Search matches saved decisions/notes as well as the visible title.
+                page.get_by_label("Find a saved version",exact=True).fill("promotion")
+                page.locator(".version-result").first.click()
+                page.frame_locator("iframe").first.get_by_role("heading",name="BIG IDEAS. BRIGHTER LIVING.").wait_for()
+                page.get_by_role("button",name="Open The warm, simple version",exact=True).click()
                 page.screenshot(path=str(output/"01-explore.png"))
                 page.get_by_role("button",name="Open Tried more promotion and content",exact=True).click()
                 page.frame_locator("iframe").first.get_by_role("heading",name="BIG IDEAS. BRIGHTER LIVING.").wait_for()
@@ -52,6 +59,8 @@ def run(output):
                 page.get_by_text("Keep the parts you like.",exact=True).wait_for()
                 page.frame_locator("iframe").nth(0).get_by_role("heading",name="A little warmth. A lot of home.").wait_for()
                 page.frame_locator("iframe").nth(1).get_by_role("heading",name="Objects with a bright side.").wait_for()
+                assert page.frames[1].evaluate("innerWidth")==1100
+                assert page.frames[2].evaluate("innerWidth")==1100
                 page.screenshot(path=str(output/"02-compare.png"))
                 page.locator('input[data-file="components/navigation.js"]').check()
                 page.get_by_role("button",name="Bring 1 part into a new path",exact=False).click()

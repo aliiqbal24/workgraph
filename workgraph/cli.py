@@ -11,7 +11,7 @@ from .version import __version__
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Persistent engineering work across agent sessions")
+    parser = argparse.ArgumentParser(description="Explore saved project versions and continue durable work across agents")
     parser.add_argument("--repo", default=".", help="Repository path (default: current directory)")
     parser.add_argument("--version", action="version", version="Workgraph " + __version__)
     commands = parser.add_subparsers(dest="command", required=True)

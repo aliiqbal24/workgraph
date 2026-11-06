@@ -5,3 +5,19 @@
 .reuse-option{display:flex!important;gap:11px;align-items:start;border:1px solid #ded7ec;background:#f4f0fa;padding:13px;border-radius:7px;font-size:11px!important}.reuse-option input{width:15px;height:15px;margin:3px 0 0;accent-color:var(--purple)}.reuse-option small{display:block;font-size:9px;color:#a093b8;margin-top:4px}
 
 .compare-grid .preview-body{position:relative;overflow:hidden}.compare-grid .preview-body.phone{overflow:auto}
+
+.find-button{border:1px solid #e3e7db;background:#fff;border-radius:5px;color:#9ba68c;font-size:10px;padding:6px 9px}.find-button kbd{font:9px var(--mono);margin-left:18px;border:1px solid #e4e9db;border-radius:3px;padding:0 4px;color:#b0b9a3}.version-results{max-height:400px;overflow:auto;margin-top:18px;display:flex;flex-direction:column;gap:6px}.version-result{border:1px solid #e4e9db;border-radius:6px;padding:12px 14px;background:#fcfdf8;text-align:left;color:#778b64}.version-result:hover{background:#f0f3e9}.version-result strong{font-size:12px;font-weight:500}.version-result small{display:block;font:9px var(--mono);margin-top:7px;color:#a2ae95}.copy-reference{height:230px!important}@media(max-width:700px){.find-button{font-size:0;padding:6px}.find-button:before{content:"⌕";font-size:17px}.find-button kbd{display:none}}
+
+/* Reading history should be as effortless as finding the right version. */
+.heading p,.inspector p,.story-banner p,.combine-heading p,.combine-bottom p,
+.compare-hint,.inline-note,dialog p,.form-note,.notes,.job-card p{color:#6e7d62}
+.eyebrow,.side-heading,.version-eyebrow,.inspector-label,.saved-info,
+.history-count,.history-heading p,.history-footer,.node-meta,.preview-address,
+.breadcrumbs,.version-result small,.file-choice small,.connected{color:#788569}
+.version-label{font-size:12px}.node-title{font-size:11px}.graph-lane{color:#697d59}
+.find-button{color:#647954}.version-result{color:#536c41}.nav{color:#68795b}
+.path-button,.favorite-button,.path-pill,.version-select{color:#61754f}
+.inspector h2{color:#354932}.status-tag.current,.node-current{color:#5e793f}
+.status-tag.viewing{color:#71578e}.notes{font-size:10px}.saved-info{font-size:9px}
+.file-choice strong{color:#526648}.preview-toolbar .button{color:#5d704a}
+.job-state{color:#5a713f}.job-output{color:#526747}

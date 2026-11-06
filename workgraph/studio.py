@@ -117,7 +117,13 @@ class Studio:
             paths[pid]={"id":pid,"attempt":a["id"],"name":names.get(pid,work[a["work_id"]]["intent"]),
                 "head":a["head"],"origin":attempts[pid]["origin_revision"],"runtime":a["runtime"],
                 "state":a["state"],"workspace":a["workspace"],"created":attempts[pid]["created"]}
-        for job in jobs:job["path"]=members.get(job["attempt_id"],job["attempt_id"])
+        by_revision={r["id"]:r for r in state["revisions"]}
+        for job in jobs:
+            job["path"]=members.get(job["attempt_id"],job["attempt_id"])
+            attempt=attempts[job["attempt_id"]]
+            origin,head=by_revision.get(attempt["origin_revision"]),by_revision.get(attempt["head"])
+            job["result_revision"]=attempt["head"]
+            job["changed_source"]=bool(origin and head and origin["tree_oid"]!=head["tree_oid"])
         return {"repository": state["repository"], "current": current_id, "versions": versions,
             "paths": list(paths.values()),
             "jobs": jobs, "checks": state["checks"], "example": (self.engine.home / "playground.json").exists(),

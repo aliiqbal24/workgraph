@@ -6,10 +6,14 @@ import sys
 
 from .api import Router, TOOL_SCHEMA
 from .version import __version__
+from .studio import Studio
+
+READ_ACTIONS=("history","version","compare","status","resume","inspect","diff")
 
 
 def serve(repo, session=None, runtime="mcp", attempt=None, stdin=None, stdout=None):
     router = Router(repo, session, runtime, attempt)
+    Studio(router.engine)  # Establish metadata at operator-owned server startup.
     stdin, stdout = stdin or sys.stdin, stdout or sys.stdout
     for line in stdin:
         if not line.strip():
@@ -27,13 +31,20 @@ def serve(repo, session=None, runtime="mcp", attempt=None, stdin=None, stdout=No
             elif method == "ping":
                 result = {}
             elif method == "tools/list":
+                read_schema=json.loads(json.dumps(TOOL_SCHEMA["parameters"]))
+                read_schema["properties"]["action"]["enum"]=list(READ_ACTIONS)
                 result = {"tools": [{"name": TOOL_SCHEMA["name"], "description": TOOL_SCHEMA["description"],
-                                     "inputSchema": TOOL_SCHEMA["parameters"]}]}
+                                     "inputSchema": TOOL_SCHEMA["parameters"],"annotations":{"readOnlyHint":False,"destructiveHint":False}},
+                                    {"name":"workgraph_read","description":"Read saved Workgraph history, source, context, comparisons and attached state. No repository mutations. Use this tool to inspect a saved point when write-tool approval is unavailable.",
+                                     "inputSchema":read_schema,"annotations":{"readOnlyHint":True,"destructiveHint":False,"idempotentHint":True,"openWorldHint":False}}]}
             elif method == "tools/call":
                 params = message.get("params", {})
-                if params.get("name") != "workgraph":
+                if params.get("name") not in ("workgraph","workgraph_read"):
                     raise ValueError("Unknown tool")
-                text = router.json(params.get("arguments", {}))
+                arguments=params.get("arguments",{})
+                if params["name"]=="workgraph_read" and (not isinstance(arguments,dict) or arguments.get("action") not in READ_ACTIONS):
+                    text=json.dumps({"error":"READ_ONLY_TOOL","message":"This tool only inspects saved work. Mutations require the normal workgraph tool and host approval."})
+                else:text = router.json(arguments)
                 result = {"content": [{"type": "text", "text": text}], "isError": "error" in json.loads(text)}
             else:
                 stdout.write(json.dumps({"jsonrpc": "2.0", "id": request_id,

@@ -10,6 +10,16 @@ pause, reconcile, select, propose, inspect, verify, and diff. Acceptance, reposi
 initialization, and check configuration remain operator actions. Model-supplied
 session IDs are not accepted; adapters use their runtime binding.
 
+Visual exploration adds history, version, compare, branch, and combine. Branch
+starts at an exact saved revision; combine transfers explicitly chosen whole files
+into a fresh path. Both operations preserve their originals. Saved source and
+explicit context are portable; hidden runtime state and external effects are not.
+
+The stdio server also exposes `workgraph_read` for strictly read-only history,
+version, compare, status, resume, inspect, and diff. It rejects mutations. Codex
+can inspect through this tool while retaining its ordinary write-tool approvals.
+The native Hermes manifest still registers one multifunction `workgraph` tool.
+
 Native Hermes captures foreground terminal, write_file, and path-based patch
 operations. It routes read_file and search_files into the same workspace. Guards
 verify the routed paths and sandbox boundary before execution. An adapter exception
@@ -32,7 +42,10 @@ when supplied to a new runtime. Permissions and credentials stay with the runtim
 The launcher sets WORKGRAPH_REPO, WORKGRAPH_ATTEMPT, WORKGRAPH_SESSION, and
 WORKGRAPH_RUNTIME. Each agent continues to authenticate through its own supported
 mechanism. The launcher adds a local MCP server for Codex/Claude and checkpoints
-the attached attempt on normal exit or interruption it observes.
+the attached attempt on normal exit or interruption it observes. Its MCP server
+uses an absolute Python entry path, so a host stripping PYTHONPATH cannot break
+module discovery. Codex requires this server to start successfully. A successful
+runtime exit is displayed separately from whether saved source actually changed.
 
 Optional Codex and Claude hooks use SessionStart, PostToolUse, PreCompact, and
 Stop; Claude additionally has PostToolUseFailure. Their configuration is printed

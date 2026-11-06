@@ -15,7 +15,7 @@ V1 includes a native **Hermes plugin**, a shared **MCP tool** for Codex and Clau
 Code, optional lifecycle hooks, a CLI, and a private visual workspace. It has no
 LLM API dependency, cloud account, telemetry, or owned credentials.
 
-![Workgraph preserves unfinished work and explicit handoff context](docs/images/workspace.webp)
+![Workgraph visual history and a real saved project preview](docs/images/explore.webp)
 
 ## Try the visual playground
 
@@ -42,6 +42,9 @@ disclosed; your branching, choices, combinations and agent tasks are real.
 - **Compare versions** opens saved pages side by side. Bring explicitly selected
   files from the right into a new path based on the left; both originals survive.
 - **Continue with an agent** supplies the chosen source and explicit saved notes.
+  At a path's latest point, the next worker can continue the same named path in a
+  fresh workspace. Continuing an earlier point creates a new direction. The
+  predecessor's saved versions remain available.
   Runs use the runtime's existing authentication and normal permissions. Up to two
   run at once, with six running/queued tasks maximum. Output, errors, and Stop are
   available in **Agent tasks**. Finished output still needs review.
@@ -54,6 +57,8 @@ projects retain saved files, history, comparison, branching and agent continuati
 Browser sandboxing is not a hostile-code VM or a guarantee against every form of
 network navigation. Individual preview/transfer files are limited to 4 MB; a
 selected-file transfer is limited to 20 MB.
+
+![Compare actual saved pages and bring selected changes into another direction](docs/images/compare.webp)
 
 For the earlier engineering example:
 
@@ -210,6 +215,12 @@ Stopping a task captures remaining files when possible. After an unclean UI-serv
 restart, prior attempts are fenced from new checkpoints and reported interrupted;
 a prior runtime process may still remain in its old workspace. A second app server
 can inspect the project but cannot take over another server's task controller.
+
+The MCP connection separates a read-only `workgraph_read` tool from the normal
+mutation tool. Codex can inspect saved work without granting write-tool approval;
+mutation calls retain normal host approval, and the launcher captures final source
+on exit. The MCP server is required at startup and uses an absolute package entry
+so runtime environment filtering cannot silently remove it.
 
 ## Scope and disclosures
 

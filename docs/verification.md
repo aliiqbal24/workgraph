@@ -1,5 +1,38 @@
 # V1 verification
 
+## Version 1.1 visual exploration
+
+The current suite contains 48 distinct tests, including safe older-version
+selection, exact-parent branching, selected-file composition/deletion, preservation
+of unrelated files, immutable source/context, path continuation across workers,
+tool retry identities, runtime exit-code propagation, real subprocess capture,
+cancellation, controller exclusivity, restart fencing, and an absolute MCP launch
+with PYTHONPATH removed.
+
+`tests/studio_browser.py` exercises finding an earlier version, making it current,
+reload persistence, creating a path from an exact point, side-by-side saved pages,
+desktop/phone sizing, combining only Navigation while keeping the original Hero,
+expanded previews, and preparing an agent continuation. It checks sandbox isolation,
+mobile overflow, page errors, and console errors. The earlier engineering browser
+flow remains tested separately at `/engineering`.
+
+An actual UI-started Hermes session changed the sample hero headline and captured
+the result. Codex 0.167.0 then continued the same named path, read saved state through
+`workgraph_read`, changed only Navigation, and preserved the hero byte for byte.
+The chosen original direction stayed unchanged. Codex's write-tool approval was
+preserved; the operator-owned launcher made its final source checkpoint. The machine
+record is `/home/ali/.cache/workgraph/live-exploration-fixed/result.json`.
+
+The live test exposed and corrected two integration gaps: Python module discovery
+when an MCP host strips PYTHONPATH, and an all-actions tool forcing approval even
+for inspection. The server now has an absolute entry, is required at startup, and
+separates strictly read-only operations from mutation calls. Earlier blocked runs
+remain in the local test history.
+
+Claude Code uses the same MCP transport/launcher; this record does not claim a live
+Claude model run. Framework app servers and external-service restoration are
+outside the saved static preview contract. No revised demo should imply otherwise.
+
 Verification uses actual temporary Git repositories. No tests reset the user's
 working tree or staging index. The guided browser example discloses its scripted
 edits and performs real core operations.
@@ -13,7 +46,7 @@ concurrent progress during checks, retry identities, publication recovery,
 historical acceptance evidence, native adapter routing/deduplication, MCP protocol,
 operator-only actions, CLI parsing, and local HTTP authentication/origin checks.
 
-The current suite contains 32 distinct tests. A separate review reproduced and
+The original 1.0 suite contained 32 distinct tests. A separate review reproduced and
 then rechecked the ownership, dependency-closure, tool-retry, publication-recovery,
 sandbox-default, resume-binding, and selection edge cases.
 

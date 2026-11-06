@@ -24,6 +24,10 @@ async def run():
                 await session.initialize()
                 tools = await session.list_tools()
                 assert any(tool.name == "workgraph" for tool in tools.tools)
+                reader=next(tool for tool in tools.tools if tool.name=="workgraph_read")
+                assert reader.annotations.read_only_hint
+                readonly=await session.call_tool("workgraph_read",{"action":"open","intent":"must be denied"})
+                assert json.loads(readonly.content[0].text)["error"]=="READ_ONLY_TOOL"
                 opened = await session.call_tool("workgraph", {"action": "open", "intent": "MCP interoperability"})
                 work = json.loads(opened.content[0].text)
                 (Path(work["workspace"]) / "sdk.txt").write_text("actual MCP client\n")

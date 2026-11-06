@@ -1,6 +1,9 @@
 import contextlib
 import io
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 import threading
 import unittest
@@ -13,10 +16,24 @@ from workgraph.cli import main
 from workgraph.mcp import serve
 from workgraph.server import Application, make_server
 from workgraph.version import __version__
+from workgraph.launch import command
 
 
 class InterfaceTests(unittest.TestCase):
     setUp = test_engine.EngineTests.setUp
+
+    def test_runtime_mcp_starts_without_inheriting_pythonpath(self):
+        attempt=self.engine.begin("Runtime transport",session="transport-test")
+        argv,_=command(self.engine,attempt,"codex")
+        self.assertIn("mcp_servers.workgraph.required=true",argv)
+        encoded=next(a.split("=",1)[1] for a in argv if a.startswith("mcp_servers.workgraph.args="))
+        args=json.loads(encoded)
+        self.assertTrue(Path(args[0]).is_file())
+        env={k:v for k,v in os.environ.items() if k not in ("PYTHONPATH","PYTHONHOME")}
+        query=json.dumps({"jsonrpc":"2.0","id":1,"method":"initialize"})+'\n'
+        result=subprocess.run([sys.executable,*args],input=query,capture_output=True,text=True,env=env,cwd=attempt["workspace"],timeout=10)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertEqual(json.loads(result.stdout)["result"]["serverInfo"]["name"],"workgraph")
 
     def test_launch_options_after_runtime_are_parsed(self):
         output = io.StringIO()
