@@ -24,7 +24,7 @@ def run(output=None):
         server = make_server(app, 0)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
-        address = f"http://127.0.0.1:{server.server_address[1]}/#token={app.token}"
+        address = f"http://127.0.0.1:{server.server_address[1]}/engineering#token={app.token}"
         try:
             with sync_playwright() as pw:
                 browser = pw.chromium.launch(executable_path="/usr/bin/chromium", headless=True, args=["--no-sandbox"])

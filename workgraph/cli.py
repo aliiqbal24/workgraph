@@ -7,12 +7,13 @@ import sys
 import tempfile
 
 from .engine import Engine, WorkgraphError
+from .version import __version__
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Persistent engineering work across agent sessions")
     parser.add_argument("--repo", default=".", help="Repository path (default: current directory)")
-    parser.add_argument("--version", action="version", version="Workgraph 1.0.0")
+    parser.add_argument("--version", action="version", version="Workgraph " + __version__)
     commands = parser.add_subparsers(dest="command", required=True)
     for name in ("init", "status", "doctor", "recover"):
         commands.add_parser(name)
@@ -71,6 +72,9 @@ def main(argv=None):
     example.add_argument("--directory")
     example.add_argument("--port", type=int, default=8731)
     example.add_argument("--complete", action="store_true", help="Run all example operations without a browser")
+    playground = commands.add_parser("playground", help="Explore a real website with saved versions and alternative directions")
+    playground.add_argument("--directory")
+    playground.add_argument("--port",type=int,default=8731)
     mcp = commands.add_parser("mcp", help="Serve shared agent tools over stdio")
     mcp.add_argument("--session")
     mcp.add_argument("--runtime", default="mcp")
@@ -94,7 +98,13 @@ def main(argv=None):
     if tail and args.command not in ("launch", "set-check"):
         parser.error("Arguments after -- are supported only by launch and set-check.")
     try:
-        if args.command == "demo":
+        if args.command == "playground":
+            from .playground import Playground
+            from .server import serve
+            engine=Playground.create(args.directory or tempfile.mkdtemp(prefix="workgraph-playground-"))
+            serve(engine.repo,args.port)
+            return
+        elif args.command == "demo":
             from .example import Example
             example = Example.create(args.directory or tempfile.mkdtemp(prefix="workgraph-example-"))
             if args.complete:
@@ -151,6 +161,8 @@ def main(argv=None):
                 case "land": result = engine.land(args.candidate, args.request_id)
                 case "diff": result = engine.diff(args.revision, args.candidate)
         print(json.dumps(result, indent=2, ensure_ascii=False))
+        if args.command == "launch" and not args.print_only:
+            return result.get("exit_code",0)
     except WorkgraphError as error:
         print(json.dumps(error.as_dict(), ensure_ascii=False))
         return 1

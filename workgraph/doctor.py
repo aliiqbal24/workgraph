@@ -4,6 +4,7 @@ from pathlib import Path
 import shutil
 
 from .engine import Engine
+from .version import __version__
 
 
 def inspect(repo):
@@ -28,7 +29,7 @@ def inspect(repo):
         checks = db.execute("SELECT count(*) FROM checks WHERE required=1").fetchone()[0]
         if not checks:
             warnings.append({"code": "NO_REQUIRED_CHECKS", "message": "Acceptance is unavailable until an operator configures a required check."})
-    return {"ok": not issues, "repository": str(engine.repo), "version": "1.0.0", "database": integrity,
+    return {"ok": not issues, "repository": str(engine.repo), "version": __version__, "database": integrity,
             "issues": issues, "warnings": warnings, "pending": pending,
             "sandbox": "unsafe operator opt-in" if os.environ.get("WORKGRAPH_UNSAFE_LOCAL") == "1" else
                        ("bubblewrap" if shutil.which("bwrap") else "unavailable; managed execution blocked"),

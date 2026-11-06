@@ -25,15 +25,16 @@ class GitStore:
         self.common = Path(self.run("rev-parse", "--path-format=absolute", "--git-common-dir").strip())
         self.home = self.common / "workgraph"
 
-    def run(self, *args, cwd=None, env=None, input=None, check=True):
+    def run(self, *args, cwd=None, env=None, input=None, check=True, binary=False):
         # Ambient Git overrides can redirect writes despite an explicit -C.
         clean = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
         clean.update(env or {})
         result = subprocess.run(["git", "-c", "core.fsync=committed", "-c", "core.hooksPath=/dev/null",
                                  "-C", str(cwd or self.repo), *map(str, args)],
-                                text=True, capture_output=True, input=input, env=clean)
+                                text=not binary, capture_output=True, input=input, env=clean)
         if check and result.returncode:
-            raise WorkgraphError("GIT_ERROR", result.stderr.strip() or result.stdout.strip())
+            message = result.stderr.strip() or result.stdout.strip()
+            raise WorkgraphError("GIT_ERROR", message.decode(errors="replace") if binary else message)
         return result.stdout if check else result
 
     def commit(self, tree, parents, message):

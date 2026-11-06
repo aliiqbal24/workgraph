@@ -21,6 +21,7 @@ import uuid
 from .errors import WorkgraphError
 from .gitstore import GitStore, digest
 from .store import Store
+from .version import __version__
 
 
 def identifier(prefix):
@@ -60,7 +61,7 @@ class Engine:
                 self.git("update-ref", self.TARGET, base, "")
             with self.db() as db:
                 self.store.event(db, "repository.initialized", payload={"base": base})
-        return {"repository": str(self.repo), "target": self.TARGET, "base": self.target(), "version": "1.0.0"}
+        return {"repository": str(self.repo), "target": self.TARGET, "base": self.target(), "version": __version__}
 
     def target(self):
         return self.git("rev-parse", "--verify", self.TARGET).strip()
@@ -633,6 +634,6 @@ class Engine:
             for item in events:
                 item["payload"] = json.loads(item["payload"])
         return {"repository": str(self.repo), "target": self.target(), "target_ref": self.TARGET,
-                "version": "1.0.0", "work": work, "attempts": attempts, "revisions": revisions,
+                "version": __version__, "work": work, "attempts": attempts, "revisions": revisions,
                 "candidates": candidates, "checks": checks, "events": events,
                 "environment": self.objects.environment()}

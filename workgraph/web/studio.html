@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f4f0"><title>Workgraph — room to explore</title><link rel="stylesheet" href="/studio.css"><script src="/studio.js" defer></script></head>
+<body>
+<aside class="sidebar">
+ <a class="brand" href="/" aria-label="Workgraph"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 7v13c0 7 11 7 11 0V7m0 13c0 7 11 7 11 0V7"/><circle cx="5" cy="7" r="3"/><circle cx="16" cy="7" r="3"/><circle cx="27" cy="7" r="3"/></svg><span>workgraph</span></a>
+ <div class="project"><span class="project-icon">W</span><div><strong id="project-name">Your project</strong><small>LOCAL WORKSPACE</small></div></div>
+ <nav aria-label="Workspace"><button class="nav active" data-tab="explore"><span>◈</span> Explore</button><button class="nav" data-tab="compare"><span>◫</span> Compare versions</button><button class="nav" data-tab="agents"><span>↗</span> Agent tasks <b id="job-count"></b></button></nav>
+ <div class="side-heading"><span>YOUR PATHS</span><button id="side-new" aria-label="Create a path">+</button></div><div id="paths"></div>
+ <div class="side-heading favorites-heading"><span>KEPT CLOSE</span><span>☆</span></div><div id="favorites"></div>
+ <div class="sidebar-bottom"><div><i></i> Saved on your computer</div><p>Every direction has a way back.</p><a id="engineering-link" href="/engineering">Checks & engineering ↗</a></div>
+</aside>
+<div class="shell">
+ <header><div class="breadcrumbs"><span>Workspace</span><span>/</span><strong id="view-name">Explore</strong></div><div class="header-right"><span id="example-label" class="sample hidden">SAMPLE PROJECT</span><span class="connected" id="connection">Connecting…</span></div></header>
+ <main>
+  <section class="heading"><div><div class="eyebrow">A LITTLE MORE ROOM TO EXPLORE</div><h1 id="page-title">Good ideas need a way back.</h1><p id="page-description">Open a version. Try another direction. Keep what you love.</p></div><button class="button primary" id="new-path">＋ Try another direction</button></section>
+  <section class="story-banner hidden" id="story-banner"><div class="story-mark">↳</div><div><strong>A real project. A few different directions.</strong><p>Explore the saved pages, compare two, or bring a part into a new path. Example edits are scripted; every version and operation is real.</p></div><button class="button small" id="story-guide">Try the stories ↗</button><button class="icon-button" id="dismiss-story" aria-label="Dismiss introduction">×</button></section>
+  <section id="main-content"></section>
+ </main>
+ <footer><span>Workgraph <span>/</span> room to explore</span><span>Choosing a version never publishes it.</span></footer>
+</div>
+<dialog id="dialog"><form id="dialog-form"><button class="close" type="button" aria-label="Close">×</button><div id="dialog-content"></div></form></dialog>
+<div class="toast hidden" id="toast" role="status"></div>
+</body></html>

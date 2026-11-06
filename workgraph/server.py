@@ -9,6 +9,10 @@ from urllib.parse import urlparse
 
 from .engine import Engine, WorkgraphError
 from .example import Example
+from .studio import Studio
+from .preview import Previews
+from .jobs import Jobs
+import shutil
 
 
 class Application:
@@ -17,10 +21,46 @@ class Application:
         self.example = example
         self.token = secrets.token_urlsafe(32)
         self.assets = Path(__file__).parent / "web"
+        self.studio = Studio(engine)
+        self.previews = Previews(self.studio)
+        self.jobs = Jobs(self.studio)
+
+    def close(self):
+        self.jobs.close()
+        self.previews.close()
+
+    def studio_state(self):
+        result = self.studio.history()
+        result["preview_base"] = self.previews.base
+        result["runtimes"] = {name:bool(shutil.which(name)) for name in ("hermes","codex","claude")}
+        return result
 
     def dispatch(self, args):
         action = args.get("action")
         key = args.get("request_id")
+        if action == "studio.start":
+            return self.studio.start(args.get("name","Starting point"), key)
+        if action == "studio.branch":
+            return self.studio.branch(args["revision"],args["name"],runtime=args.get("runtime","local"),prompt=args.get("prompt"),request_id=key)
+        if action == "studio.note":
+            return self.studio.note(args["revision"],args.get("label"),args.get("starred"),key)
+        if action == "studio.choose":
+            return self.studio.choose(args["revision"],key)
+        if action == "studio.compare":
+            return self.studio.compare(args["left"],args["right"])
+        if action == "studio.combine":
+            return self.studio.combine(args["target"],args["source"],args["paths"],args.get("name","Combined direction"),key)
+        if action == "studio.agent":
+            reuse=args.get("reuse_path",False)
+            if not isinstance(reuse,bool):raise WorkgraphError("INVALID_ARGUMENTS","Choose whether to continue this path or create another.")
+            return self.jobs.start(args["revision"],args["name"],args["runtime"],args["prompt"],key,reuse_path=reuse)
+        if action == "studio.cancel":
+            return self.jobs.cancel(args["job"])
+        if action == "studio.file":
+            content=self.studio.read(args["revision"],args["path"],limit=1000000)
+            return {"path":args["path"],"content":content.decode("utf-8",errors="replace")}
+        if action == "studio.files":
+            return {"revision":args["revision"],"files":list(self.studio.files(args["revision"]))}
         if action == "open":
             return self.engine.begin(args.get("intent", ""), session=args.get("session", "operator"),
                                      runtime=args.get("runtime", "local"), depends_on=args.get("depends_on", []), request_id=key)
@@ -70,9 +110,12 @@ def make_server(application, port=8731):
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("Referrer-Policy", "no-referrer")
-            self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'")
+            preview = (application.previews.base or "").split("/",3)[:3]
+            origin = "/".join(preview) if preview else "'none'"
+            self.send_header("Content-Security-Policy", f"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-src {origin}; frame-ancestors 'none'; base-uri 'none'")
             self.end_headers()
-            self.wfile.write(body)
+            try:self.wfile.write(body)
+            except (BrokenPipeError,ConnectionResetError):pass
 
         def authorized(self):
             host = self.headers.get("Host", "")
@@ -93,13 +136,22 @@ def make_server(application, port=8731):
 
         def do_GET(self):
             route = urlparse(self.path).path
+            if route == "/favicon.ico":
+                return self.send(204,b"","image/x-icon")
+            if route == "/api/studio":
+                if not self.authorized():
+                    return
+                return self.send(200,application.studio_state())
             if route == "/api/state":
                 if not self.authorized():
                     return
                 result = application.engine.status()
                 result["example"] = application.example.state() if application.example else None
                 return self.send(200, result)
-            files = {"/": ("index.html", "text/html; charset=utf-8"),
+            files = {"/": ("studio.html", "text/html; charset=utf-8"),
+                     "/engineering": ("index.html", "text/html; charset=utf-8"),
+                     "/studio.js": ("studio.js", "text/javascript; charset=utf-8"),
+                     "/studio.css": ("studio.css", "text/css; charset=utf-8"),
                      "/app.js": ("app.js", "text/javascript; charset=utf-8"),
                      "/style.css": ("style.css", "text/css; charset=utf-8")}
             if route not in files:
@@ -128,8 +180,13 @@ def make_server(application, port=8731):
             except Exception as error:
                 self.send(500, {"error": "OPERATION_FAILED", "message": f"The operation did not complete ({type(error).__name__}). Inspect workgraph doctor."})
 
-    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    class Server(ThreadingHTTPServer):
+        def server_close(self):
+            application.close()
+            super().server_close()
+    server = Server(("127.0.0.1", port), Handler)
     server.daemon_threads = True
+    application.previews.start(server.server_address[1])
     return server
 
 

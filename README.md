@@ -1,10 +1,15 @@
 # Workgraph
 
-**The work outlives the worker.**
+**Keep every direction. Find your way back.**
 
-Workgraph is local version control for unfinished agent work. It preserves the
-objective, source, decisions, questions, exact dependencies, and check results
-across isolated attempts and session handoffs. Accepted output is ordinary Git.
+Workgraph is a visual workspace for exploring projects with agents. Open a saved
+version, branch from any point, compare actual pages, bring chosen changes into a
+new direction, and continue with your preferred agent. Earlier versions remain
+available. Git stores the source underneath.
+
+Version 1.1 centers the five [exploration stories](docs/exploration-stories.md).
+The original persistent-work engine, exact dependencies, independent checks and
+Git-compatible acceptance remain available in the engineering workspace.
 
 V1 includes a native **Hermes plugin**, a shared **MCP tool** for Codex and Claude
 Code, optional lifecycle hooks, a CLI, and a private visual workspace. It has no
@@ -12,7 +17,7 @@ LLM API dependency, cloud account, telemetry, or owned credentials.
 
 ![Workgraph preserves unfinished work and explicit handoff context](docs/images/workspace.webp)
 
-## Try the complete example
+## Try the visual playground
 
 Requirements: Linux, Python 3.11+, Git 2.43+, and working `bubblewrap` (`bwrap`).
 The default check and managed terminal modes fail closed when their sandbox is
@@ -21,13 +26,36 @@ unavailable. This release is tested on Linux; Windows is not supported.
 ```bash
 python -m venv /path/to/workgraph-env
 /path/to/workgraph-env/bin/pip install .
-/path/to/workgraph-env/bin/workgraph demo
+/path/to/workgraph-env/bin/workgraph playground
 ```
 
-Open the private localhost URL printed by the command. The guided example uses
-scripted edits and **real repository operations**: two pieces of work, an
-interruption, a handoff, an outdated dependency, a failing frozen check, a repair,
-and one accepted Git commit. Its disclosure remains visible in the interface.
+Open the private localhost URL. The sample is a real, offline website with warm,
+editorial, playful, and busier saved versions. Its initial edits are scripted and
+disclosed; your branching, choices, combinations and agent tasks are real.
+
+- Open a point in the history to inspect its saved page. Star and rename versions
+  you want to find again. **Make current** chooses a direction without overwriting
+  files or publishing it.
+- **Try another direction** creates one or more fresh paths from that exact point.
+  Choose a runtime and instruction to start actual local agent tasks, or create
+  paths without running a model.
+- **Compare versions** opens saved pages side by side. Bring explicitly selected
+  files from the right into a new path based on the left; both originals survive.
+- **Continue with an agent** supplies the chosen source and explicit saved notes.
+  Runs use the runtime's existing authentication and normal permissions. Up to two
+  run at once, with six running/queued tasks maximum. Output, errors, and Stop are
+  available in **Agent tasks**. Finished output still needs review.
+
+Previews serve immutable regular files on a separate loopback origin in an opaque
+browser sandbox. Static projects with index.html (including dist/public/web
+entries) work without installing dependencies or starting app processes. Arbitrary
+framework servers, databases, and external services are not launched. Other
+projects retain saved files, history, comparison, branching and agent continuation.
+Browser sandboxing is not a hostile-code VM or a guarantee against every form of
+network navigation. Individual preview/transfer files are limited to 4 MB; a
+selected-file transfer is limited to 20 MB.
+
+For the earlier engineering example:
 
 For a terminal-only acceptance run:
 
@@ -45,6 +73,10 @@ workgraph --repo /path/to/project init
 workgraph --repo /path/to/project begin 'Migrate the profile API' --runtime hermes
 workgraph --repo /path/to/project serve
 ```
+
+In the visual workspace, **Save a starting point** captures the current tracked
+and non-ignored working files without changing the original checkout/index.
+**Checks & engineering** opens the detailed candidate/acceptance dashboard.
 
 `begin` returns an isolated workspace. Edit there. `snapshot` saves source and
 explicit context; native Hermes also checkpoints managed foreground operations
@@ -87,6 +119,11 @@ lifecycle hooks. It routes file paths and foreground terminal commands into the
 active attempt, isolates terminal writes with bubblewrap, captures completed
 operations, and injects explicitly labeled saved state. Repeated tool IDs are
 deduplicated before execution. Uncertain operations are never blindly repeated.
+
+The shared agent tool also exposes `history`, `version`, `compare`, `branch`, and
+`combine`, so an agent can inspect saved context/source and start from the exact
+point chosen in the interface. File combinations are explicit file replacements
+or deletions; semantic feature merging remains an engineering task.
 
 V1 managed attempts require foreground terminal commands. `execute_code` and the
 V4A patch form are blocked with instructions to use managed terminal or the
@@ -167,6 +204,12 @@ Non-publication operations interrupted before acknowledgement may leave an
 unacknowledged operation or orphaned managed workspace. Recovery reports these
 without rerunning side effects or deleting files. A saved checkpoint remains
 available independently of the original session.
+
+Agent task metadata and output are stored locally under the common Git directory.
+Stopping a task captures remaining files when possible. After an unclean UI-server
+restart, prior attempts are fenced from new checkpoints and reported interrupted;
+a prior runtime process may still remain in its old workspace. A second app server
+can inspect the project but cannot take over another server's task controller.
 
 ## Scope and disclosures
 

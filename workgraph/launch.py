@@ -21,7 +21,10 @@ def command(engine, attempt, runtime, extra=None):
         binary = shutil.which("hermes")
         if not binary:
             raise WorkgraphError("RUNTIME_MISSING", "Hermes is not on PATH.")
-        result = subprocess.run([binary, "plugins", "list", "--enabled", "--json"], text=True, capture_output=True)
+        try:
+            result = subprocess.run([binary, "plugins", "list", "--enabled", "--json"], text=True, capture_output=True, timeout=20)
+        except subprocess.TimeoutExpired:
+            raise WorkgraphError("RUNTIME_UNAVAILABLE", "Hermes plugin discovery timed out. Open Hermes normally and check its plugin setup.")
         try:
             payload = json.loads(result.stdout)
         except ValueError:

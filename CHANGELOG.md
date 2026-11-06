@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0
+
+- Added the visual exploration workspace: named history, starred versions, exact
+  branching, immutable static previews, side-by-side comparison, and explicit
+  selected-file combinations with provenance.
+- Added operator-started agent tasks from a saved point, progress/output, bounded
+  concurrency, cancellation capture, and restart fencing.
+- Added shared history, version, compare, branch and combine tools for agents.
+- Added a real static website playground and acceptance coverage for the five
+  exploration stories. The engineering workspace remains at `/engineering`.
+
 ## 1.0.0
 
 - Persistent work, isolated attempts, immutable code/context checkpoints, and

@@ -12,6 +12,7 @@ import test_engine
 from workgraph.cli import main
 from workgraph.mcp import serve
 from workgraph.server import Application, make_server
+from workgraph.version import __version__
 
 
 class InterfaceTests(unittest.TestCase):
@@ -60,7 +61,7 @@ class InterfaceTests(unittest.TestCase):
             self.assertEqual(denied.exception.code, 401)
             denied.exception.close()
             request = Request(address + "/api/state", headers={"Authorization": "Bearer " + app.token})
-            self.assertEqual(json.load(urlopen(request))["version"], "1.0.0")
+            self.assertEqual(json.load(urlopen(request))["version"], __version__)
             request = Request(address + "/api/action", data=b'{"action":"open","intent":"bad origin"}',
                 headers={"Authorization": "Bearer " + app.token, "Origin": "https://unrelated.invalid", "Content-Type": "application/json"})
             with self.assertRaises(HTTPError) as denied:
