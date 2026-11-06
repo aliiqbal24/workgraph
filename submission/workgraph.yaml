@@ -2,7 +2,7 @@
 name: workgraph
 title: Workgraph
 repo: https://github.com/aliiqbal24/workgraph
-sha: 77c23d2cfb9d598a4f9214be015cd3a10443729a
+sha: 4e7c489ebe8affa283a62ede01dc0b393aabfe72
 description: Visual saved versions, exact-point branches, side-by-side static previews, selected-file combinations, downloads, and agent continuation. Reads/writes local repositories and runs approved commands.
 maintainer: aliiqbal24
 tier: community
@@ -11,10 +11,10 @@ requires_hermes: ">=0.21.0"
 version: "1.1.0"
 platforms: [linux]
 readme: true
-image: https://raw.githubusercontent.com/aliiqbal24/workgraph/77c23d2cfb9d598a4f9214be015cd3a10443729a/docs/images/banner.webp
+image: https://raw.githubusercontent.com/aliiqbal24/workgraph/4e7c489ebe8affa283a62ede01dc0b393aabfe72/docs/images/banner.webp
 screenshots:
-  - https://raw.githubusercontent.com/aliiqbal24/workgraph/77c23d2cfb9d598a4f9214be015cd3a10443729a/docs/images/explore.webp
-  - https://raw.githubusercontent.com/aliiqbal24/workgraph/77c23d2cfb9d598a4f9214be015cd3a10443729a/docs/images/compare.webp
+  - https://raw.githubusercontent.com/aliiqbal24/workgraph/4e7c489ebe8affa283a62ede01dc0b393aabfe72/docs/images/explore.webp
+  - https://raw.githubusercontent.com/aliiqbal24/workgraph/4e7c489ebe8affa283a62ede01dc0b393aabfe72/docs/images/compare.webp
 known_issues:
   - Linux, Python 3.11+, Git 2.43+, and working bubblewrap are required for default managed execution.
   - Saved previews support static regular files; framework servers and external services are not started. Combination transfers whole files.

@@ -2,7 +2,7 @@
 
 Prepared locally. This workflow has not published a repository, catalog PR,
 social post, or application. Proposed repository: `aliiqbal24/workgraph`.
-The catalog draft pins release commit `77c23d2cfb9d598a4f9214be015cd3a10443729a`.
+The catalog draft pins release commit `4e7c489ebe8affa283a62ede01dc0b393aabfe72`.
 
 ## Entry text
 
