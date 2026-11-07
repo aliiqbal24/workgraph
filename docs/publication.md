@@ -1,19 +1,31 @@
 # Publication route — 2.0
 
-Prepared for a public developer-preview release, with source and separate plugin
-bundles. Nothing is published by the packaging script. The proposed repository
-from the earlier submission packet is `aliiqbal24/workgraph`; this checkout has no
-remote, so the final owner/name and public release remain to be confirmed.
+Workgraph is public and directly installable. The catalog listing is awaiting
+maintainer review; it is not yet an accepted marketplace entry.
+
+- [Public source](https://github.com/aliiqbal24/workgraph)
+- [Installable 2.0.0 release](https://github.com/aliiqbal24/workgraph/releases/tag/v2.0.0)
+- [Hermes catalog PR](https://github.com/NousResearch/hermes-agent/pull/150453)
+- [Current upstream Hermes admission validation: passed](https://github.com/aliiqbal24/workgraph/actions/runs/42331776805)
+- [69-test acceptance run: passed](https://github.com/aliiqbal24/workgraph/actions/runs/42331776985)
+
+The immutable release source is
+`37c7280a514d3fa23e7193f44b5123d1f9c90163`. Main can continue to change while
+users test this fixed version. Functional updates get a new version and release,
+followed by an updated exact catalog pin. Never move the published tag.
 
 ## The fastest useful release
 
-Publish the reviewed source repository and attach the wheel, the three plugin ZIPs,
-checksums, screenshots, and the current product demo to a GitHub release. People can
-try the local product immediately and use their existing agent subscriptions.
-Claude's marketplace lives in the same repository, so publishing that source makes
-the marketplace available without waiting for directory review. Codex can use the
-portable ZIP or the documented MCP command directly. Submit the Hermes catalog PR
-in parallel with this direct-install release.
+The release includes a wheel, three plugin ZIPs, checksums, verification metadata,
+and a narrated product walkthrough. The wheel was downloaded from the public
+release, checksum checked, and installed into the local runtime. The native Hermes
+plugin was installed from the public repository at the exact release commit. A
+real task through that installation completed with three independently passing
+browser checks. Fresh Hermes tool discovery also opened the same project.
+
+Claude's marketplace is public in the same repository and has been installed from
+GitHub locally. Codex's stdio MCP integration is configured locally. A live Claude
+model run is not claimed. See [live testing](live-testing.md) for the actual workflow.
 
 `python scripts/package_release.py --output /tmp/workgraph-release` produces explicit
 Hermes, Codex, and Claude source packages and checksums. No environments, databases,
@@ -32,24 +44,25 @@ reviewed. Screenshots and all local commands/background/network behavior must be
 disclosed. No runtime patching, built-in tool overrides, self-updater, or executable
 payload is included.
 
-The installed Hermes 0.21 CLI has `plugins doctor`, which passes native discovery,
-manifest import, and registration for this tree. It predates the current documented
-`plugins validate --install-deps` command. Run that current upstream gate at the
-published release pin before submitting; local doctor is not a substitute for catalog
-CI. The prepared entry should be pinned only after the release commit exists.
+The installed Hermes CLI's Plugin Doctor passes discovery, manifest import, and
+registration. The current official upstream admission action also passed against
+the exact public release. The open catalog PR adds only its pinned community entry;
+catalog checks there run when a maintainer starts them. Local admission validation
+does not imply catalog acceptance.
 
 ## Claude Code
 
 The [official publication guide](https://code.claude.com/docs/en/plugins/publish)
 supports a single-plugin repository with `.claude-plugin/marketplace.json` and source
 `"./"`. Local manifest/marketplace validation runs with `claude plugin validate .`.
-After the repository exists, the user-facing install is:
+The public marketplace install is:
 
 ```text
-/plugin install workgraph --marketplace aliiqbal24/workgraph
+/plugin marketplace add aliiqbal24/workgraph
+/plugin install workgraph@workgraph-tools
 ```
 
-Direct ZIP and `--plugin-dir` installation work before a directory listing. A broader
+Direct ZIP and `--plugin-dir` installation are also available. A broader
 [Anthropic directory submission](https://claude.ai/directory/manage) is a separate
 review. This product requires local execution and should be described for Claude
 Code; a listing must not imply the local backend runs in a remote chat environment.
@@ -68,17 +81,15 @@ promise an immediate public listing. Eligibility, a verified publishing identity
 clean desktop testing, and portal review are needed before that directory launch.
 Do not misclassify this as a remotely executable plugin to bypass the local gate.
 
-## Release sequence
+## Remaining hackathon steps
 
-1. Finish the release checks and generate artifacts from the exact reviewed tree.
-2. Confirm the public repository destination, create it, and push the release/tag.
-3. Attach immutable release artifacts and the demo; update install links from draft
-   to live and verify a clean download/install.
-4. Pin the Hermes catalog entry to the public commit and open its review PR.
-5. Verify Claude marketplace installation from GitHub; pursue directory review in
-   parallel. Use direct Codex installation while determining local-directory eligibility.
-6. Submit the hackathon's required repository and demo links through its current
-   entry form. The announcement/form requirements must be checked again at submission.
+The [official announcement](https://ca.linkedin.com/company/nousresearch) requires
+a catalog PR, a demo posted on X tagging `@NousResearch`, and both links through the
+entry form. It specifies **under 90 seconds**, with a deadline of **November 11,
+2026 at 5 PM EST** (3 PM in Edmonton). The form may be submitted once the PR is open;
+marketplace acceptance need not precede that step.
 
-No release upload, catalog PR, social post, platform submission, or email is sent by
-this document or by the build scripts.
+The public source, release, and catalog PR are complete. User testing, the final
+short demo post, and entry form remain. No social post or hackathon form submission
+has been sent. Broader Claude/OpenAI directory applications are separate review
+processes and are not claimed as complete.

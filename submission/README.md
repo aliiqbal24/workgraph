@@ -42,9 +42,11 @@ suite, repeated open and immediate stop/reopen, actual screenshot delivery to MC
 clean unpacked source MCP across all three packages, strict Claude validation, and
 native Hermes Plugin Doctor. See [the evidence](../docs/verification-v2.md).
 
-Live Claude model execution and current upstream Hermes catalog CI are not claimed.
-The installed older Hermes CLI lacks the new catalog `validate` command. Public
-review/hosting remain separate release steps.
+The public-release installation has also completed a native Hermes edit, preserving
+all eight issues and passing all three protected behavior checks. A fresh Hermes
+conversation opened the native workspace tool. The current official upstream
+Hermes admission action passed on the exact release commit. Live Claude model
+execution and marketplace acceptance are not claimed.
 
 Release source pin: `37c7280a514d3fa23e7193f44b5123d1f9c90163`.
 
@@ -53,9 +55,16 @@ Release source pin: `37c7280a514d3fa23e7193f44b5123d1f9c90163`.
 [README](../README.md) has local setup and host integration commands.
 [Publication](../docs/publication.md) describes the direct-release, Hermes catalog,
 Claude marketplace, and Codex local-plugin routes and their current review gates.
-The proposed public repository is `aliiqbal24/workgraph`; it does not yet exist.
+The [source](https://github.com/aliiqbal24/workgraph) and
+[2.0.0 release](https://github.com/aliiqbal24/workgraph/releases/tag/v2.0.0) are public.
+The [Hermes catalog PR](https://github.com/NousResearch/hermes-agent/pull/150453) is
+open, pending maintainer review. The native Hermes plugin and browser-enabled wheel
+have been installed from these public artifacts; Claude's public marketplace plugin
+is installed and Codex's MCP integration is configured.
 
-The GitHub app connector currently needs reauthentication; the existing GitHub CLI
-is signed in to `aliiqbal24`. No public repository, release, catalog PR, social post,
-or hackathon entry has been sent. Release files are prepared locally so publication
-can be the next concrete action after confirming the public destination.
+The [official announcement](https://ca.linkedin.com/company/nousresearch) requires
+an X demo tagging `@NousResearch`, under 90 seconds, and the PR/demo links through
+the entry form by November 11, 2026 at 5 PM EST. The preserved 102-second walkthrough
+is a full product tour. The new launch cut is a separate production and submission
+asset. No X post or entry form has been sent; testing the actual installed product
+can happen before those final steps.

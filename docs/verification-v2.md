@@ -26,8 +26,8 @@ and an actual Codex task. No model success text is counted as behavior evidence.
   read-only history pass. Portable manifests follow Agent Plugins 1.0 schemas.
 - Claude Code's strict marketplace/manifest validator passes without findings.
   Installed Hermes Plugin Doctor passes discovery, import, and native registration.
-  The installed Hermes CLI lacks the newer upstream catalog validator; public catalog
-  CI remains a release gate rather than a claimed local pass.
+  The current official upstream Hermes admission action also passes at the exact
+  public release pin. The catalog PR remains pending maintainer review.
 
 ## Actual feature adaptation
 
@@ -43,9 +43,17 @@ High priority filtering keeps the intended issues. All three passed. The source
 board independently fails its comment-persistence check. Closing the capture browser
 did not stop the real task; the project controller completed and captured it.
 
-A live Claude model run is not claimed. Earlier V1.1 native Hermes and Hermes-to-Codex
-runs are retained separately. The V2 native adapter is checked through its public
-registration surface and unit/regression coverage.
+A second actual task used native Hermes installed from the public GitHub release
+pin and the wheel downloaded from the public release. It changed only `view.json`
+to give the app a new title. All eight issues, SQL schema, and database rows remained
+identical; only SQLite's last-writer-version header bytes differed between its
+backups. Three independent browser checks passed on the result. A fresh Hermes
+conversation discovered the native tool and opened the same workspace without a
+new work attempt. The local live project is separate from the plugin checkout.
+
+A live Claude model run is not claimed. Claude's public marketplace installation
+and Codex's installed MCP configuration are verified. Earlier V1.1 native Hermes
+and Hermes-to-Codex runs are retained separately.
 
 ## Reproduce
 
