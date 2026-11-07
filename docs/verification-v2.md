@@ -5,10 +5,11 @@ and an actual Codex task. No model success text is counted as behavior evidence.
 
 ## Automated boundaries
 
-- 68 core, regression, adapter, state-snapshot, and workspace tests pass. Added cases
+- 69 core, regression, adapter, state-snapshot, and workspace tests pass. Added cases
   cover WAL/database-only history, exact branch/takeover restoration, path/symlink
   refusal, code-only legacy versions, operator/viewer capability separation,
-  persistent browsing focus, project binding, and inherited immutable flow definitions.
+  persistent browsing focus, project binding, and inherited immutable flow definitions, source stability across state backup, and actual image
+  delivery through the read-only MCP tool.
 - The V2 browser story passes: record a comment/save/reload expectation, protect it,
   replay it, save interactive data as a new version, preserve the original database
   and exact source, leave the chosen direction unchanged, reload into the same camera

@@ -6,6 +6,7 @@ import json
 import sqlite3
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from workgraph.playground import Playground
 from workgraph.studio import Studio
@@ -35,6 +36,21 @@ class ProductTests(unittest.TestCase):
 
     def connection(self):
         return sqlite3.connect(self.database)
+
+    def test_source_change_during_state_backup_does_not_publish_a_mixed_version(self):
+        capture = ProductState.capture
+        before = len(self.engine.status()["revisions"])
+
+        def changed(service, *args):
+            result = capture(service, *args)
+            (self.root / "concurrent.txt").write_text("A write during state capture")
+            return result
+
+        with patch.object(ProductState, "capture", changed):
+            with self.assertRaises(WorkgraphError) as caught:
+                self.engine.checkpoint(self.attempt["attempt"], "A concurrent capture")
+        self.assertEqual(caught.exception.code, "WORKSPACE_CHANGED")
+        self.assertEqual(len(self.engine.status()["revisions"]), before)
 
     def test_database_only_changes_create_versions_and_forks_restore_exact_wal_rows(
         self,

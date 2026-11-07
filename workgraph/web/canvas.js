@@ -426,7 +426,9 @@ function renderDetails() {
       toast("Capturing this saved state and replaying its behaviors.");
       await refresh();
     });
-    $("#protect-flow").onclick = safely(() => openLive(v, true));
+    $("#protect-flow").onclick = safely(() =>
+      v.product_state ? openLive(v, true) : connectForm(v),
+    );
     $("#favorite").onclick = safely(async () => {
       await action("studio.note", { revision: v.id, starred: !v.starred });
       await refresh();
@@ -682,7 +684,7 @@ async function openLive(v, record = false) {
   const state = live;
   let timer;
   dialogCleanup = () => {
-    clearInterval(timer);
+    clearTimeout(timer);
     live = null;
   };
   const mount = (url) => {
@@ -717,18 +719,28 @@ async function openLive(v, record = false) {
     const check = async () => {
       if (live !== state) return;
       const r = await action("runtime.touch", { instance: address.id });
+      if (live !== state) return;
       state.instance = r;
       if (r.state === "ready" && !$(".live-main iframe")) mount(r.url);
       if (r.state === "failed") {
-        clearInterval(timer);
-        $(".live-loading").textContent = r.error;
+        ($(".live-loading") || $(".live-bar span")).textContent = r.error;
+        return;
       }
+      timer = setTimeout(
+        () =>
+          check().catch((e) => {
+            if (live === state) toast(e.message, true);
+          }),
+        r.state === "ready" ? 10000 : 350,
+      );
     };
     await check();
-    timer = setInterval(
-      () => check().catch((e) => toast(e.message, true)),
-      1500,
-    );
+  }
+  if (live !== state) return;
+  if (!address) {
+    $("#record-flow").disabled = true;
+    $("#record-flow").title =
+      "Connect a running app to record interactive behaviors.";
   }
   $("#live-reload").onclick = () => {
     if (state.recording) {

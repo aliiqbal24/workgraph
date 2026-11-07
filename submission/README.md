@@ -37,7 +37,7 @@ production is in `/home/ali/Videos/workgraph-v3/`; earlier deliveries remain int
 
 ## Validation
 
-68 core/interface/regression tests, the V2 browser story, the retained classic browser
+69 core/interface/regression tests, the V2 browser story, the retained classic browser
 suite, repeated open and immediate stop/reopen, actual screenshot delivery to MCP,
 clean unpacked source MCP across all three packages, strict Claude validation, and
 native Hermes Plugin Doctor. See [the evidence](../docs/verification-v2.md).
@@ -45,6 +45,8 @@ native Hermes Plugin Doctor. See [the evidence](../docs/verification-v2.md).
 Live Claude model execution and current upstream Hermes catalog CI are not claimed.
 The installed older Hermes CLI lacks the new catalog `validate` command. Public
 review/hosting remain separate release steps.
+
+Release source pin: `5c086b7dabda9fb12c0f8730be6998e18f0cb61b`.
 
 ## Install and publication
 

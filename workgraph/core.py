@@ -227,6 +227,8 @@ class Engine:
                     raise WorkgraphError("WORKSPACE_CHANGED", "Wait for outstanding writes before checkpointing.")
                 previous = self._revision(db, attempt["head"]) if attempt["head"] else None
                 state=states.capture(db,attempt_id,attempt["workspace"],tree)
+                if profile and tree!=self.objects.tree(attempt['workspace'],exclude_data=True):
+                    raise WorkgraphError('WORKSPACE_CHANGED','Source changed during the database snapshot. Wait for outstanding writes before checkpointing.')
                 previous_state=states.get(previous["id"],db) if previous else None
                 same_state=(state or {}).get("fingerprint")== (previous_state or {}).get("fingerprint")
                 if previous and previous["tree_oid"] == tree and previous["context"] == context and previous["dependencies"] == deps and same_state:
