@@ -8,4 +8,4 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from workgraph.mcp import serve
 
 serve(os.environ.get("WORKGRAPH_REPO", "."), os.environ.get("WORKGRAPH_SESSION"),
-      os.environ.get("WORKGRAPH_RUNTIME", "mcp"), os.environ.get("WORKGRAPH_ATTEMPT"))
+      os.environ.get("WORKGRAPH_RUNTIME", "mcp"), os.environ.get("WORKGRAPH_ATTEMPT"),unbound=not bool(os.environ.get('WORKGRAPH_REPO')))

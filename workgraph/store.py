@@ -8,6 +8,7 @@ import sqlite3
 import time
 
 from .errors import WorkgraphError
+from .product_state import SCHEMA as PRODUCT_SCHEMA
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -90,7 +91,7 @@ class Store:
         with closing(sqlite3.connect(self.path)) as db:
             db.execute("PRAGMA journal_mode=WAL")
             db.execute("PRAGMA synchronous=FULL")
-            db.executescript(SCHEMA)
+            db.executescript(SCHEMA+PRODUCT_SCHEMA)
 
     @contextmanager
     def connect(self):

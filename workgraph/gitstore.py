@@ -61,7 +61,7 @@ class GitStore:
         self.run("worktree", "add", "--detach", str(path), commit)
         return path
 
-    def tree(self, workspace):
+    def tree(self, workspace, exclude_data=False):
         workspace = Path(workspace).resolve()
         managed = (self.home / "workspaces").resolve()
         if not workspace.is_relative_to(managed):
@@ -73,7 +73,13 @@ class GitStore:
         with tempfile.TemporaryDirectory(prefix="workgraph-index-") as directory:
             env = {"GIT_INDEX_FILE": str(Path(directory) / "index")}
             self.run("read-tree", "HEAD", cwd=workspace, env=env)
-            self.run("add", "-A", "--", ".", cwd=workspace, env=env)
+            if exclude_data:
+                # Enumerate first: git add's exclude pathspec can report ignored
+                # database directories as an error on recent Git versions.
+                names=self.run("ls-files","-z","--cached","--others","--exclude-standard",cwd=workspace,env=env)
+                names="\0".join(name for name in names.split("\0") if name and not name.startswith(".workgraph-data/"))
+                if names:self.run("add","-A","--pathspec-from-file=-","--pathspec-file-nul",cwd=workspace,env={**env,"GIT_LITERAL_PATHSPECS":"1"},input=names+"\0")
+            else:self.run("add", "-A", "--", ".", cwd=workspace, env=env)
             return self.run("write-tree", cwd=workspace, env=env).strip()
 
     def merge(self, left, right, base=None):

@@ -1,26 +1,29 @@
 # Changelog
 
+## 2.0.0 — working product history
+
+- Branching canvas with actual saved-product thumbnails, galleries, pan/zoom, search,
+  favorites, minimap, and persistent camera/selection.
+- Versioned SQLite development state, including WAL rows, independent restoration,
+  and database-only checkpoints.
+- Operator-approved app recipes and separate disposable app runtimes.
+- Recorded and inherited browser behaviors, visual expectations, independent checks,
+  and playable evidence bound to exact saved source/data.
+- Semantic borrow and selective-undo tasks through existing agents, with source
+  provenance and original versions preserved.
+- Persistent one-per-project controller, observational opening, private operator
+  access, read-only agent links, and explicit continuation from a saved state.
+- Real full-stack Fieldwork showcase and separate Hermes, portable Codex, and Claude
+  packages. Optional browser dependencies are kept out of the core MCP requirement.
+- The classic visual UI remains at `/classic`; checked Git acceptance remains at
+  `/engineering`.
+
 ## 1.1.0
 
-- Added the visual exploration workspace: named history, starred versions, exact
-  branching, immutable static previews, side-by-side comparison, and explicit
-  selected-file combinations with provenance.
-- Added operator-started agent tasks from a saved point, progress/output, bounded
-  concurrency, cancellation capture, and restart fencing.
-- Added shared history, version, compare, branch and combine tools for agents.
-- Added portable ZIP downloads with exact regular-file bytes and executable modes.
-- Kept human choices fixed across later agent saves; hardened queued cancellation,
-  runtime preflight, and file/directory combination ordering.
-- Added a real static website playground and acceptance coverage for the five
-  exploration stories. The engineering workspace remains at `/engineering`.
+Named saved paths, static previews, exact source downloads, selected-file combinations,
+native Hermes capture, and managed Codex/Claude continuation.
 
 ## 1.0.0
 
-- Persistent work, isolated attempts, immutable code/context checkpoints, and
-  ownership-safe handoffs.
-- Exact provisional dependencies, outdated-input detection, and reconciliation.
-- Checked candidate composition, frozen check sources, timeouts, historical
-  acceptance evidence, atomic Git publication, and publication recovery.
-- Native Hermes execution capture, retry receipts, explicit guards, and bundled skill.
-- Shared stdio MCP, Codex/Claude launchers, and optional trusted lifecycle hooks.
-- Private visual workspace and a disclosed, reproducible guided example.
+Immutable source/context revisions, pinned dependencies, isolated attempts, reconciliation,
+operator-configured evidence, and checked Git-compatible acceptance.

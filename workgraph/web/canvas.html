@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Workgraph — room to explore</title>
+    <link rel="stylesheet" href="/canvas.css" />
+    <script src="/canvas.js" defer></script>
+  </head>
+  <body>
+    <aside id="sidebar">
+      <a class="brand" href="/" aria-label="Workgraph home"
+        ><svg viewBox="0 0 28 30" aria-hidden="true">
+          <path d="M5 25C5 12 22 21 22 6M5 25V6M5 25C5 18 14 16 14 8" />
+          <circle cx="5" cy="5" r="3" />
+          <circle cx="14" cy="6" r="3" />
+          <circle cx="22" cy="4" r="3" />
+          <circle cx="5" cy="26" r="3" /></svg
+        >workgraph<span>local</span></a
+      >
+      <button id="project" class="project">
+        <span class="project-mark">F</span
+        ><span
+          ><strong id="project-name">Your project</strong
+          ><small id="connection">Connecting…</small></span
+        >
+      </button>
+      <button id="search" class="search">
+        <span>⌕&nbsp; Find a moment</span><kbd>⌘ K</kbd>
+      </button>
+      <nav aria-label="Project views">
+        <button class="nav-item active" data-filter="all">
+          <span>⑂</span> All directions
+          <small id="version-count"></small></button
+        ><button class="nav-item" data-filter="starred">
+          <span>☆</span> Saved favorites</button
+        ><button class="nav-item" data-filter="protected">
+          <span>◇</span> Protected behavior
+        </button>
+      </nav>
+      <div class="side-label">DIRECTIONS <span id="path-count"></span></div>
+      <div id="paths"></div>
+      <div id="activity" class="activity"></div>
+      <div class="side-bottom">
+        <div class="local-dot"></div>
+        <span
+          >Yours. On this computer.<small
+            >Every direction stays available.</small
+          ></span
+        ><button id="help" class="icon" aria-label="How Workgraph works">
+          ?
+        </button>
+      </div>
+    </aside>
+    <main id="main">
+      <header>
+        <div>
+          <div class="eyebrow">A LITTLE ROOM TO EXPLORE</div>
+          <h1>Your work, with possibilities.</h1>
+        </div>
+        <div class="header-actions">
+          <span id="access-badge" class="pill">Local workspace</span
+          ><button id="compare" class="button">Compare versions</button
+          ><button id="new-direction" class="button primary">
+            ＋ New direction
+          </button>
+        </div>
+      </header>
+      <div class="canvas-bar">
+        <span id="canvas-summary">Every good idea deserves a branch.</span>
+        <div>
+          <label class="quiet"
+            ><input type="checkbox" id="all-saves" /> Show every save</label
+          ><button id="fit-top" class="text-button">Fit to screen ↗</button>
+        </div>
+      </div>
+      <section id="canvas" aria-label="Branching history canvas" tabindex="0">
+        <div id="world">
+          <svg id="branches" aria-hidden="true"></svg>
+          <div id="nodes"></div>
+        </div>
+        <div id="empty" hidden></div>
+        <div class="canvas-hint">
+          Drag to explore <span>·</span> Scroll to zoom <span>·</span> Click a
+          moment to open it
+        </div>
+        <div class="zoom">
+          <button id="zoom-out" aria-label="Zoom out">−</button
+          ><span id="zoom-value">100%</span
+          ><button id="zoom-in" aria-label="Zoom in">＋</button
+          ><button id="fit" aria-label="Fit tree to screen">⌖</button>
+        </div>
+        <svg id="minimap" aria-label="Overview of the tree"></svg>
+      </section>
+      <div id="sample-note" hidden>
+        EXAMPLE PROJECT
+        <span
+          >Initial directions are scripted. Saved code, data, screenshots, and
+          browser checks are real.</span
+        >
+      </div>
+    </main>
+    <aside id="inspector" hidden aria-label="Selected version">
+      <div class="inspector-top">
+        <span class="eyebrow">A SAVED MOMENT</span>
+        <div>
+          <button id="previous" class="icon" aria-label="Previous version">
+            ←</button
+          ><button
+            id="close-inspector"
+            class="icon"
+            aria-label="Close version details"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+      <div id="details"></div>
+    </aside>
+    <dialog id="dialog">
+      <div class="dialog-head">
+        <span id="dialog-title"></span
+        ><button id="close-dialog" class="icon" aria-label="Close dialog">
+          ×
+        </button>
+      </div>
+      <div id="dialog-body"></div>
+    </dialog>
+    <div id="toast" role="status" hidden></div>
+  </body>
+</html>

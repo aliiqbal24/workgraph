@@ -34,7 +34,7 @@ class HermesAdapter:
                 if self.initial_attempt and self.initial_session is None:
                     self.initial_session = session_id
                     owner, attempt = self.initial_owner or owner, self.initial_attempt
-                self.routers[session_id] = Router(repo, owner, "hermes", attempt)
+                self.routers[session_id] = Router(repo, owner, "hermes", attempt,unbound=not bool(self.repository or attempt))
             return self.routers[session_id]
 
     def tool(self, args, **kwargs):

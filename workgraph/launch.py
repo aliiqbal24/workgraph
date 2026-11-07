@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import uuid
+import signal
 
 from .engine import Engine, WorkgraphError
 
@@ -81,7 +82,21 @@ def launch(repo, runtime, intent=None, attempt_id=None, extra=None, print_only=F
     print(f"Workgraph attached: {attempt['attempt']}\nWorkspace: {attempt['workspace']}\n", file=sys.stderr, flush=True)
     code = 130
     try:
-        code = subprocess.call(argv, cwd=attempt["workspace"], env=env)
+        if os.environ.get('WORKGRAPH_SUPERVISED')=='1':
+            from .runtime import stop_group
+            process=subprocess.Popen(argv,cwd=attempt['workspace'],env=env,start_new_session=True)
+            old={}
+            def interrupt(number,frame):
+                stop_group(process)
+                raise KeyboardInterrupt
+            try:
+                for number in (signal.SIGTERM,signal.SIGINT):old[number]=signal.signal(number,interrupt)
+                code=process.wait()
+            except KeyboardInterrupt:code=130
+            finally:
+                stop_group(process)
+                for number,handler in old.items():signal.signal(number,handler)
+        else:code = subprocess.call(argv, cwd=attempt["workspace"], env=env)
     finally:
         try:
             engine.checkpoint(attempt["attempt"], session=attempt["session"])

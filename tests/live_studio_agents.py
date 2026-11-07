@@ -36,7 +36,7 @@ def run(directory):
         with sync_playwright() as pw:
             browser=pw.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox'])
             page=browser.new_page(viewport={'width':1600,'height':1350})
-            page.goto(f'http://127.0.0.1:{server.server_address[1]}/#token={app.token}')
+            page.goto(f'http://127.0.0.1:{server.server_address[1]}/classic#token={app.token}')
             page.get_by_text('Connected locally',exact=True).wait_for()
             page.get_by_role('button',name='Continue with an agent',exact=False).click()
             page.get_by_label('Name this direction').fill('A direction that outlives its worker')

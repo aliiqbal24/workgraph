@@ -9,6 +9,7 @@ import uuid
 import zipfile
 
 from .errors import WorkgraphError
+from .product_state import ProductState,SCHEMA as PRODUCT_SCHEMA
 
 SCHEMA = '''
 CREATE TABLE IF NOT EXISTS studio_paths (
@@ -56,7 +57,7 @@ class Studio:
         self._preview_entries = {}
         self._preview_notes = {}
         with engine.store.lock(), engine.db() as db:
-            db.executescript(SCHEMA)
+            db.executescript(SCHEMA+PRODUCT_SCHEMA)
 
     def revision(self, key):
         with self.engine.db() as db:
@@ -121,6 +122,7 @@ class Studio:
             names = {r["attempt_id"]: r["name"] for r in db.execute("SELECT * FROM studio_paths")}
             notes = {r["revision_id"]: dict(r) for r in db.execute("SELECT * FROM studio_notes")}
             current = db.execute("SELECT value FROM studio_choices WHERE key='current'").fetchone()
+            focus = db.execute("SELECT value FROM studio_choices WHERE key='focus'").fetchone()
             sources = {r["revision_id"]: {"revision": r["source_revision"], "paths": json.loads(r["paths"])} for r in db.execute("SELECT * FROM studio_sources")}
             jobs = [dict(r) for r in db.execute("SELECT * FROM studio_jobs ORDER BY created DESC LIMIT 30")]
             members = {r["attempt_id"]:r["path_id"] for r in db.execute("SELECT * FROM studio_path_members")}
@@ -152,6 +154,7 @@ class Studio:
             job["result_revision"]=attempt["head"]
             job["changed_source"]=bool(origin and head and origin["tree_oid"]!=head["tree_oid"])
         return {"repository": state["repository"], "current": current_id, "versions": versions,
+            "focus":json.loads(focus[0]) if focus else None,
             "paths": list(paths.values()),
             "jobs": jobs, "checks": state["checks"], "example": (self.engine.home / "playground.json").exists(),
             "preview_scope": "Saved static web files. Server apps and external services are not started."}
@@ -171,6 +174,23 @@ class Studio:
                     db.execute("UPDATE studio_notes SET starred=? WHERE revision_id=?", (int(starred), revision))
                 return self.engine._finish(db, key, {"revision": revision, "label": label, "starred": starred}, "version.named", revision)
         return self.engine._request("studio.note", {"revision": revision, "label": label, "starred": starred}, action, request_id)
+
+    def rename_path(self,path,name,request_id=None):
+        name=self.name(name)
+        if path not in {p['id'] for p in self.history()['paths']}:raise WorkgraphError('NOT_FOUND','Choose a direction to rename.')
+        def action(key):
+            with self.engine.db() as db:
+                db.execute('INSERT OR REPLACE INTO studio_paths VALUES (?,?)',(path,name))
+                return self.engine._finish(db,key,{'path':path,'name':name},'path.renamed',path)
+        return self.engine._request('studio.path.rename',{'path':path,'name':name},action,request_id)
+
+    def product_details(self,revision):
+        from .behaviors import Behaviors
+        state=ProductState(self.engine).get(revision)
+        with self.engine.db() as db:row=db.execute('SELECT state,manifest,error FROM product_artifacts WHERE revision_id=?',(revision,)).fetchone()
+        return {'product_state':{'fingerprint':state['fingerprint'],'files':len(state['manifest']['files']),'missing':state['manifest']['missing']} if state else None,
+                'protection':Behaviors(self).latest(revision),'flows':Behaviors(self).list(revision),
+                'gallery':{'state':row['state'],'error':row['error'],**json.loads(row['manifest'])} if row else {'state':'not_captured','images':[]}}
 
     def archive(self, revision):
         """Portable saved source, with no checkout mutation or Git internals."""
@@ -316,6 +336,7 @@ class Studio:
             source_paths = set(filter(None,self.engine.git("ls-files","-z","--cached","--others","--exclude-standard").split("\0")))
             saved_paths = set(filter(None,self.engine.git("ls-files","-z",cwd=root).split("\0")))
             for path in source_paths | saved_paths:
+                if path.startswith(".workgraph-data/"):continue
                 self.path(path)
                 origin, dest = self.engine.repo/path, root/path
                 if not dest.parent.resolve().is_relative_to(root.resolve()):
@@ -325,6 +346,8 @@ class Studio:
                     dest.parent.mkdir(parents=True,exist_ok=True);dest.symlink_to(os.readlink(origin))
                 elif origin.is_file():
                     dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(origin,dest)
+            with self.engine.db() as db:profile=ProductState(self.engine).profile(db)
+            if profile:ProductState(self.engine).copy_databases(self.engine.repo,root,profile)
             saved=self.engine.checkpoint(result["attempt"],name,session=result["session"],request_id=key+":save")
             with self.engine.db() as db:db.execute("INSERT OR REPLACE INTO studio_paths VALUES (?,?)",(result["attempt"],"Original"))
             self.choose(saved["revision"],key+":choose")

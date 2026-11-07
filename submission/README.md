@@ -1,97 +1,59 @@
-# Workgraph submission packet — 1.1
+# Workgraph submission — 2.0
 
-Prepared locally. This workflow has not published a repository, catalog PR,
-social post, or application. Proposed repository: `aliiqbal24/workgraph`.
-The catalog draft pins release commit `e148eb87eb3a271ef0462430d5392b066c81587e`.
+**Explore freely. Keep what works.**
 
-## Entry text
+An agent can improve a screen and quietly break the behavior underneath. Workgraph
+makes exploration reversible at the product level: a branching tree of recognizable
+saved source, development data, and explicit context, with actual galleries and
+independently recorded behavior evidence.
 
-**Workgraph — good ideas need a way back.**
+## Submission description
 
-Your agent made five changes. You want the earlier layout, the newer navigation,
-and another model's perspective. That should be a few visible choices.
+Open Workgraph from Hermes, Codex, or Claude Code. Browse a saved product without
+changing the conversation. Continue from its exact state in a separate direction.
+Record what should keep working, then let those expectations follow future branches.
+Compare directions and ask an agent to borrow just the feature you want. Keep both
+originals and verify the new result against the target's protected behaviors.
 
-Workgraph makes projects explorable: open named saved versions and see their
-actual pages, keep a favorite current, branch from any exact point, compare two
-outcomes, and bring selected files into a new combination. Both originals remain
-available. Download any saved version as a portable project.
-
-Continue the chosen point with Hermes, Codex, or Claude Code. A direction keeps
-its name and history across workers, while each gets a fresh isolated workspace.
-Saved source and explicit notes follow it. Your chosen favorite stays fixed until
-you deliberately choose another result. Ordinary Git stores the source underneath.
-
-The native Hermes plugin automatically captures supported managed foreground
-file and terminal work through public middleware/hooks. Codex and Claude Code
-share the MCP contract and local launch bridges. An engineering view retains
-exact dependencies, operator-configured checks, and checked Git acceptance.
-No cloud account, telemetry, owned model credentials, or runtime approval bypass.
+This developer preview adds SQLite development-state snapshots, real isolated app
+previews, desktop/phone galleries, recorded checks, visual expectations, semantic
+borrow/undo tasks, and a persistent project controller. Closing the tab leaves tasks
+running; reopening restores your place. Git remains the source storage and checked
+publication layer underneath.
 
 ## What the demo proves
 
-The narrated walkthrough shows actual browser operations: recover a warmer
-version, choose it, create a named alternative, compare desktop/phone previews,
-bring Navigation into a fresh version, and download the saved project. The sample
-variants use disclosed scripted edits; the source, branching, previews,
-combinations, and downloads are real.
+The 102-second narrated walkthrough shows actual UI operations with Relay, an
+original animated AI presenter. It shows seven versus eight saved issues, recording
+a reload/persistence expectation, a deliberately broken board's failed browser
+replay, and a real Codex-adapted board that keeps the target filter, eight issues,
+and reliable comments. All three target protections independently pass on the new
+saved state. Only `client/app.js` changed; target database blobs are byte-identical.
 
-A separate segment inspects immutable results from actual UI-started model runs:
-Hermes changed the headline; Codex continued the same named path and changed only
-Navigation. The prior headline and all other files were preserved byte for byte.
-The footage labels these as saved results, rather than staging a live model run.
-
-Relay is an original animated AI presenter. Speech was synthesized locally;
-phoneme durations drive mouth animation and the actual utterances time captions.
-Real recordings, narration takes, the rig, edit manifest, and render scripts are
-retained in `/home/ali/Videos/workgraph-v2/`.
+The initial sample directions/regression are scripted and disclosed. The Codex run
+is real, and the footage labels its result as saved rather than staging execution.
+The product, app instances, SQLite snapshots, images, and checks are real. The new
+production is in `/home/ali/Videos/workgraph-v3/`; earlier deliveries remain intact.
 
 ## Validation
 
-- 56 core, interface, regression, lifecycle, and version-exploration tests passed.
-- Chromium passed the five stories, exact ZIP export, starting from a person's
-  own dirty checkout, saved dist/ output with CSS/modules, sandbox isolation,
-  mobile overflow, and page/console error checks.
-- Real Python MCP SDK discovery, strict read-only tool rejection of writes,
-  checkpointing, retry replay, and operator boundaries passed.
-- Installed Hermes 0.21.0 Plugin Doctor passed native registration. Real Hermes
-  execution and actual Hermes-to-Codex continuation were verified separately.
-- A clean wheel install outside the checkout completed the original engineering
-  example. Built static previews and exact downloads were checked in the new UI.
+68 core/interface/regression tests, the V2 browser story, the retained classic browser
+suite, repeated open and immediate stop/reopen, actual screenshot delivery to MCP,
+clean unpacked source MCP across all three packages, strict Claude validation, and
+native Hermes Plugin Doctor. See [the evidence](../docs/verification-v2.md).
 
-Claude Code's transport/launcher is included; a live Claude model run is not
-claimed. Current upstream catalog CI is an admission check still to be run on a
-published submission.
+Live Claude model execution and current upstream Hermes catalog CI are not claimed.
+The installed older Hermes CLI lacks the new catalog `validate` command. Public
+review/hosting remain separate release steps.
 
-## Product scope
+## Install and publication
 
-Saved regular static web files get isolated previews. Workgraph does not start
-arbitrary framework servers, databases, or external services to browse history.
-Other projects retain saved source, file comparison, paths, download, and agent
-continuation. Combination transfers selected whole files or explicit deletions;
-finer semantic edits belong to an agent and require review.
+[README](../README.md) has local setup and host integration commands.
+[Publication](../docs/publication.md) describes the direct-release, Hermes catalog,
+Claude marketplace, and Codex local-plugin routes and their current review gates.
+The proposed public repository is `aliiqbal24/workgraph`; it does not yet exist.
 
-The plugin reads/writes selected local repositories and managed workspaces and
-invokes Git, agent runtimes, and approved foreground commands. It stores saved
-source, explicit notes, output, events, and retry receipts locally. Ordinary runtime
-commands may use the network; independent checks use a private network namespace.
-It does not read credential stores or change runtime permissions.
-
-Linux, Python 3.11+, Git 2.43+, and working bubblewrap are required for default
-managed execution. Restored state is captured source and explicit notes, rather
-than hidden model state, external effects, ignored build outputs, or credential stores.
-
-The product hypothesis is coherent visual exploration and portable continuation
-with less version-management effort. Existing products already offer checkpoints,
-worktrees, and alternatives. No unmeasured universal superiority is claimed.
-
-## Publication sequence
-
-1. Review the video and public source; publish the proposed repository and the
-   pinned release/tag. Attach the source ZIP, wheel, MP4, captions, and poster.
-2. Add `workgraph.yaml` to `plugin-catalog/` in a PR to NousResearch/hermes-agent;
-   use `catalog-pr.md` and read the actual catalog CI results.
-3. Post the demo using `social-post.txt`, replace draft references with the actual
-   release/post/PR URLs, and submit through the organizer's application.
-
-Catalog instructions:
-https://hermes-agent.nousresearch.com/docs/developer-guide/plugins/catalog-submission
+The GitHub app connector currently needs reauthentication; the existing GitHub CLI
+is signed in to `aliiqbal24`. No public repository, release, catalog PR, social post,
+or hackathon entry has been sent. Release files are prepared locally so publication
+can be the next concrete action after confirming the public destination.

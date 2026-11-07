@@ -1,8 +1,12 @@
 {
   "name": "workgraph",
-  "version": "1.1.0",
-  "description": "Explore named project versions, compare outcomes, combine chosen changes, and continue with agents.",
+  "version": "2.0.0",
+  "description": "A visual tree of working product states. Explore exact source and development data, protect behaviors, and continue with your agent.",
   "author": {
     "name": "Workgraph contributors"
-  }
+  },
+  "license": "MIT",
+  "hooks": {},
+  "mcpServers": "./.mcp.json",
+  "icon": "./assets/icon.png"
 }

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "workgraph-agent"
-version = "1.1.0"
+version = "2.0.0"
 description = "Explore saved project versions, keep every direction, and continue with agents"
 requires-python = ">=3.11"
 license = "MIT"
@@ -13,8 +13,11 @@ readme = "README.md"
 [project.scripts]
 workgraph = "workgraph.cli:main"
 
+[project.optional-dependencies]
+browser = ["playwright>=1.50,<2", "Pillow>=11,<13"]
+
 [tool.setuptools.packages.find]
 include = ["workgraph*"]
 
 [tool.setuptools.package-data]
-workgraph = ["web/*.html", "web/*.css", "web/*.js"]
+workgraph = ["web/*.html", "web/*.css", "web/*.js", "templates/fieldwork/*.py", "templates/fieldwork/*.json", "templates/fieldwork/client/*"]

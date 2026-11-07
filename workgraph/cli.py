@@ -68,6 +68,14 @@ def main(argv=None):
     diff.add_argument("--candidate")
     server = commands.add_parser("serve", help="Open the private local operator UI")
     server.add_argument("--port", type=int, default=8731)
+    opening=commands.add_parser("open",help="Open or reopen this project's persistent visual workspace")
+    opening.add_argument("--no-browser",action="store_true")
+    commands.add_parser('stop',help='Stop this project controller and save partial agent work')
+    controller=commands.add_parser("workspace-controller",help=argparse.SUPPRESS)
+    controller.add_argument("--port",type=int,default=0)
+    showcase=commands.add_parser("showcase",help="Create the full-stack Fieldwork example with real saved data")
+    showcase.add_argument("--directory")
+    showcase.add_argument("--no-browser",action="store_true")
     example = commands.add_parser("demo", help="Create and serve the real guided example")
     example.add_argument("--directory")
     example.add_argument("--port", type=int, default=8731)
@@ -79,6 +87,7 @@ def main(argv=None):
     mcp.add_argument("--session")
     mcp.add_argument("--runtime", default="mcp")
     mcp.add_argument("--attempt")
+    mcp.add_argument("--unbound",action="store_true",help="Allow explicit project selection for a portable plugin")
     hook = commands.add_parser("hook")
     hook.add_argument("event")
     setup = commands.add_parser("hook-config", help="Print optional lifecycle config for review/trust")
@@ -98,7 +107,22 @@ def main(argv=None):
     if tail and args.command not in ("launch", "set-check"):
         parser.error("Arguments after -- are supported only by launch and set-check.")
     try:
-        if args.command == "playground":
+        if args.command == "open":
+            from .workspace import open_workspace
+            result=open_workspace(args.repo,not args.no_browser)
+        elif args.command=='stop':
+            from .workspace import stop_workspace
+            result=stop_workspace(args.repo)
+        elif args.command == "workspace-controller":
+            from .workspace import run_controller
+            run_controller(args.repo,args.port)
+            return
+        elif args.command == "showcase":
+            from .showcase import Showcase
+            from .workspace import open_workspace
+            engine=Showcase.create(args.directory or tempfile.mkdtemp(prefix='workgraph-fieldwork-'))
+            result=open_workspace(engine.repo,not args.no_browser)
+        elif args.command == "playground":
             from .playground import Playground
             from .server import serve
             engine=Playground.create(args.directory or tempfile.mkdtemp(prefix="workgraph-playground-"))
@@ -121,7 +145,7 @@ def main(argv=None):
             return
         elif args.command == "mcp":
             from .mcp import serve
-            serve(args.repo, args.session, args.runtime, args.attempt)
+            serve(args.repo, args.session, args.runtime, args.attempt,unbound=args.unbound)
             return
         elif args.command == "hook":
             from .hooks import run

@@ -22,6 +22,7 @@ from .errors import WorkgraphError
 from .gitstore import GitStore, digest
 from .store import Store
 from .version import __version__
+from .product_state import ProductState
 
 
 def identifier(prefix):
@@ -156,6 +157,7 @@ class Engine:
             json.dumps(context), origin, now, now))
         for dependency_work, revision in deps.items():
             db.execute("INSERT INTO dependencies VALUES (?,?,?)", (key, dependency_work, revision))
+        ProductState(self).bind_attempt(db,key,origin,path)
         return {"work": work_id, "attempt": key, "workspace": str(path), "base": base,
                 "generation": 0, "session": session, "runtime": runtime}
 
@@ -218,11 +220,16 @@ class Engine:
                         context[field] = value
                 context["session"], context["runtime"] = attempt["session"], attempt["runtime"]
                 deps = self._dependencies(db, attempt_id)
-                tree = self.objects.tree(attempt["workspace"])
-                if tree != self.objects.tree(attempt["workspace"]):
+                states=ProductState(self)
+                profile=states.profile(db,attempt=attempt_id)
+                tree = self.objects.tree(attempt["workspace"],exclude_data=bool(profile))
+                if tree != self.objects.tree(attempt["workspace"],exclude_data=bool(profile)):
                     raise WorkgraphError("WORKSPACE_CHANGED", "Wait for outstanding writes before checkpointing.")
                 previous = self._revision(db, attempt["head"]) if attempt["head"] else None
-                if previous and previous["tree_oid"] == tree and previous["context"] == context and previous["dependencies"] == deps:
+                state=states.capture(db,attempt_id,attempt["workspace"],tree)
+                previous_state=states.get(previous["id"],db) if previous else None
+                same_state=(state or {}).get("fingerprint")== (previous_state or {}).get("fingerprint")
+                if previous and previous["tree_oid"] == tree and previous["context"] == context and previous["dependencies"] == deps and same_state:
                     if select is True:
                         db.execute("UPDATE work SET selected_revision=? WHERE id=?", (previous["id"], work["id"]))
                     result = {"revision": previous["id"], "work": work["id"], "attempt": attempt_id,
@@ -237,6 +244,7 @@ class Engine:
                     rid, attempt_id, work["id"], attempt["head"], commit, tree,
                     json.dumps(context), json.dumps(deps), json.dumps(environment), time.time(),
                 ))
+                states.attach(db,rid,state)
                 generation = attempt["generation"] + 1
                 db.execute("UPDATE attempts SET head=?,context=?,generation=?,updated=? WHERE id=?",
                            (rid, json.dumps(context), generation, time.time(), attempt_id))

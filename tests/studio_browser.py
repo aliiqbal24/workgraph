@@ -20,7 +20,7 @@ def run(output):
         refs=json.loads((engine.home/"playground.json").read_text())
         app=Application(engine);server=make_server(app,0)
         threading.Thread(target=server.serve_forever,daemon=True).start()
-        address=f"http://127.0.0.1:{server.server_address[1]}/#token={app.token}"
+        address=f"http://127.0.0.1:{server.server_address[1]}/classic#token={app.token}"
         errors=[];console=[]
         try:
             with sync_playwright() as p:
@@ -122,7 +122,7 @@ def run(output):
                 try:
                     own_page=browser.new_page(viewport={"width":1440,"height":1000},accept_downloads=True)
                     own_page.on("pageerror",lambda e:errors.append(str(e)))
-                    own_page.goto(f"http://127.0.0.1:{own_server.server_address[1]}/#token={own_app.token}")
+                    own_page.goto(f"http://127.0.0.1:{own_server.server_address[1]}/classic#token={own_app.token}")
                     own_page.get_by_role("button",name="Save a starting point",exact=True).click()
                     own_page.get_by_label("Name this starting point").fill("My real starting point")
                     own_page.get_by_role("button",name="Save starting point",exact=True).click()

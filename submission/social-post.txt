@@ -1,8 +1,7 @@
-“Keep the earlier layout. Borrow this menu. Let another agent continue.”
+Your agent made it prettier. Did it keep working?
 
-Workgraph makes that a few visible choices: saved pages, separate directions,
-side-by-side comparison, and a way back from every idea.
+Workgraph gives Hermes, Codex, and Claude Code a visual tree of working products: source + development data + context, actual screenshots, and replayable protected behaviors.
 
-Native Hermes plugin. Ordinary Git underneath.
+Borrow the board you like. Keep your filters, saved issues, and comments. Verify the result. Keep every direction.
 
-Built for @NousResearch. Demo attached.
+Local Linux developer preview. MIT licensed. Repo + demo links go here after publication.

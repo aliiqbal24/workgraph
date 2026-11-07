@@ -1,0 +1,14 @@
+{
+  "name": "workgraph-tools",
+  "owner": {
+    "name": "Workgraph contributors"
+  },
+  "plugins": [
+    {
+      "name": "workgraph",
+      "source": "./",
+      "description": "A visual tree of working product states. Explore exact source and development data, protect behaviors, and continue with your agent."
+    }
+  ],
+  "description": "Visual product history and safe exploration with your coding agent."
+}

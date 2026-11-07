@@ -1,0 +1,34 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "workgraph",
+  "version": "2.0.0",
+  "description": "A visual tree of working product states. Explore exact source and development data, protect behaviors, and continue with your agent.",
+  "author": {
+    "name": "Workgraph contributors"
+  },
+  "license": "MIT",
+  "extensions": {
+    "com.openai": {
+      "hooks": {},
+      "interface": {
+        "displayName": "Workgraph",
+        "shortDescription": "Explore. Keep what works.",
+        "longDescription": "A visual tree of working product states. Explore exact source and development data, protect behaviors, and continue with your agent.",
+        "developerName": "Workgraph contributors",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
+        "defaultPrompt": [
+          "Open Workgraph for this project.",
+          "Continue from the version I\u2019m browsing.",
+          "Show my saved directions."
+        ],
+        "brandColor": "#365B43",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/icon.png"
+      }
+    }
+  }
+}

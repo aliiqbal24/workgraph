@@ -1,30 +1,27 @@
-Workgraph gives people a visible way to explore projects with agents: named saved
-versions, exact-point branching, immutable static previews, side-by-side outcomes,
-selected whole-file combinations, portable downloads, and continuation across
-workers on one named path. Ordinary Git remains the source store.
+Workgraph makes agent-built products explorable through a local branching tree.
+Saved versions can include SQLite development data, actual screenshots, and
+independently replayed operator-approved behaviors. Users can continue from an
+exact state or ask an existing agent to borrow a feature into a fresh branch.
 
-The native plugin registers one workgraph tool, pre_tool_call, pre_llm_call,
-on_session_finalize, and tool_request/tool_execution middleware. It bundles an
-optional skill and uses public APIs. Codex/Claude use the same core through stdio
-MCP; a strictly read-only tool separates inspection from writes requiring approval.
+Native surfaces: one registered tool, three declared observer hooks, and tool
+request/execution middleware. No runtime monkey-patching or built-in tool override.
+The native Plugin Doctor passes. The current upstream catalog validator and catalog
+CI must pass against the final published 40-character pin before this PR is opened.
 
-Validation: 56 automated tests, full Chromium story flows, own dirty-project start
-and exact archive export, real MCP SDK interoperability, clean wheel install and
-complete engineering example, Hermes Plugin Doctor, actual native execution, and
-an actual UI-started Hermes-to-Codex continuation. The headline from Hermes stayed
-byte-identical when Codex changed only Navigation on the same named path.
-A live Claude model run is not claimed. This PR's catalog CI remains the admission
-validation; the installed Hermes exposes Doctor rather than plugins validate.
+Disclosures:
+- Reads/writes selected local Git projects and their common metadata, including
+  explicit context, development snapshots, browser artifacts, and task logs.
+- Executes Git, bubblewrap, Chromium/Playwright, approved app preparation/runtime
+  commands, and operator-started Hermes/Codex/Claude subprocesses. Models retain
+  their normal credentials, sign-in, and permission policy.
+- Starts a persistent loopback-only project controller and separate disposable app
+  processes; tasks may continue after browser closure. Explicit stopping preserves
+  partial work. Source-only history works without optional browser dependencies.
+- Approved preparation/app commands and existing agents can make normal network
+  requests. The preview filesystem sandbox shares the host network. No telemetry,
+  hosted repository service, model credential store, self-updater, or binary payload.
+- Captures configured non-secret SQLite development data and screenshots. Password
+  fields are omitted from recordings; other entered fixtures can be retained.
 
-Disclosures: reads/writes selected repositories and managed workspaces; invokes
-Git, local agent CLIs, and approved foreground commands; stores source, explicit
-context, task output, check logs, events, and receipts locally; serves an optional
-token-authenticated localhost UI. Runtime authentication/approvals stay intact.
-Normal runtime commands may use the network; checks use a private network
-namespace. No telemetry, credential-store access, self-updater, or core patches.
-
-Linux/bubblewrap required by default. Preview is saved static regular files;
-framework servers and external services are not started. Combinations are explicit
-whole-file replacements/deletions, with provenance and originals preserved. The
-demo discloses its scripted sample variants and separately shows saved results
-from the verified actual agent runs.
+Attach the exact release screenshots and current narrated demo. Do not submit the
+placeholder catalog pin; generate the entry from the final public commit.
