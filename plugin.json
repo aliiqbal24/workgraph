@@ -30,5 +30,7 @@
         "logo": "./assets/icon.png"
       }
     }
-  }
+  },
+  "repository": "https://github.com/aliiqbal24/workgraph",
+  "homepage": "https://github.com/aliiqbal24/workgraph"
 }

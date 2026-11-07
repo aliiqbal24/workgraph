@@ -28,6 +28,23 @@ This is version 2.0, a local Linux developer preview. Git stores source undernea
 The canvas is the everyday interface; exact dependencies and checked Git acceptance
 remain available in the engineering view at `/engineering`.
 
+## Install the published release
+
+[Download Workgraph 2.0](https://github.com/aliiqbal24/workgraph/releases/tag/v2.0.0).
+The release contains the Python wheel, Hermes/Codex/Claude plugin packages,
+checksums, and the narrated walkthrough. The core works without model credentials;
+agent tasks use your existing runtime sign-in.
+
+To install the native Hermes plugin directly:
+
+```bash
+hermes plugins install aliiqbal24/workgraph --ref 37c7280a514d3fa23e7193f44b5123d1f9c90163
+hermes plugins enable workgraph
+```
+
+This pins the tested 2.0.0 source. Install the browser-enabled CLI below for actual
+app screenshots and recordings.
+
 ## Try it locally
 
 Requires Python 3.11+, Git 2.43+, Linux with working bubblewrap, and Chromium.
@@ -73,7 +90,7 @@ hermes plugins enable workgraph
 ```
 
 **Claude Code:** load the checkout with `claude --plugin-dir /absolute/path/to/workgraph`.
-The public marketplace install command, once the repository is published, is:
+Install the Claude Code plugin from our public marketplace:
 
 ```text
 /plugin install workgraph --marketplace aliiqbal24/workgraph
@@ -134,4 +151,18 @@ packages and the remaining public-release steps. [Verification](docs/verificatio
 records what was actually tested. [Engineering architecture](docs/ideal-version-control.md)
 explains the underlying source and acceptance model.
 
-MIT licensed. The proposed public repository and catalog listings are not yet live.
+MIT licensed. [Source](https://github.com/aliiqbal24/workgraph) ·
+[Releases](https://github.com/aliiqbal24/workgraph/releases).
+The Hermes catalog listing is reviewed separately; direct installation works before
+catalog acceptance.
+
+## Keep developing after publication
+
+The `v2.0.0` release stays fixed for installation and reproducible demos. Development
+continues on `main`; experimental work can use feature branches or separate worktrees.
+Local editing does not change an installed release. Bump the version and cut a new
+release when an improvement is ready. Hermes catalog updates use a new exact commit
+pin through review; there is no plugin self-updater.
+
+See [live testing](docs/live-testing.md) for using the installed plugin with your own
+agent and a disposable project.

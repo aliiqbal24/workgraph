@@ -8,5 +8,7 @@
   "license": "MIT",
   "hooks": {},
   "mcpServers": "./.mcp.json",
-  "icon": "./assets/icon.png"
+  "icon": "./assets/icon.png",
+  "repository": "https://github.com/aliiqbal24/workgraph",
+  "homepage": "https://github.com/aliiqbal24/workgraph"
 }
