@@ -2,7 +2,7 @@
 name: workgraph
 title: Workgraph
 repo: https://github.com/aliiqbal24/workgraph
-sha: 5c086b7dabda9fb12c0f8730be6998e18f0cb61b
+sha: 37c7280a514d3fa23e7193f44b5123d1f9c90163
 description: Visual product-state tree with actual galleries, SQLite development snapshots, protected behavior replays, feature borrowing, and persistent agent continuation. Reads/writes local repositories and runs approved local commands.
 maintainer: aliiqbal24
 tier: community
@@ -11,10 +11,10 @@ requires_hermes: ">=0.21.0"
 version: "2.0.0"
 platforms: [linux]
 readme: true
-image: https://raw.githubusercontent.com/aliiqbal24/workgraph/5c086b7dabda9fb12c0f8730be6998e18f0cb61b/docs/images/product-tree.png
+image: https://raw.githubusercontent.com/aliiqbal24/workgraph/37c7280a514d3fa23e7193f44b5123d1f9c90163/docs/images/product-tree.png
 screenshots:
-  - https://raw.githubusercontent.com/aliiqbal24/workgraph/5c086b7dabda9fb12c0f8730be6998e18f0cb61b/docs/images/product-tree.png
-  - https://raw.githubusercontent.com/aliiqbal24/workgraph/5c086b7dabda9fb12c0f8730be6998e18f0cb61b/docs/images/product-compare.png
+  - https://raw.githubusercontent.com/aliiqbal24/workgraph/37c7280a514d3fa23e7193f44b5123d1f9c90163/docs/images/product-tree.png
+  - https://raw.githubusercontent.com/aliiqbal24/workgraph/37c7280a514d3fa23e7193f44b5123d1f9c90163/docs/images/product-compare.png
 known_issues:
   - Linux, Python 3.11+, Git 2.43+, and working bubblewrap are required for default managed execution.
   - Dynamic previews require an approved app recipe, Chromium, and working bubblewrap. Hosted services and production databases are not restored.

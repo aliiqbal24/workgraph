@@ -46,7 +46,7 @@ Live Claude model execution and current upstream Hermes catalog CI are not claim
 The installed older Hermes CLI lacks the new catalog `validate` command. Public
 review/hosting remain separate release steps.
 
-Release source pin: `5c086b7dabda9fb12c0f8730be6998e18f0cb61b`.
+Release source pin: `37c7280a514d3fa23e7193f44b5123d1f9c90163`.
 
 ## Install and publication
 
