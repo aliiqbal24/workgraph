@@ -1,0 +1,14 @@
+name: Hermes admission
+on:
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v2.0.0
+      - uses: NousResearch/hermes-agent/.github/actions/plugin-validate@8153953654574f8624dc3652b1df7162ead425a8
+        with:
+          path: .
+          hermes-ref: 8153953654574f8624dc3652b1df7162ead425a8

@@ -24,7 +24,7 @@ class InterfaceTests(unittest.TestCase):
 
     def test_runtime_mcp_starts_without_inheriting_pythonpath(self):
         attempt=self.engine.begin("Runtime transport",session="transport-test")
-        argv,_=command(self.engine,attempt,"codex")
+        argv,_=command(self.engine,attempt,"codex",runtime_binary="codex")
         self.assertIn("mcp_servers.workgraph.required=true",argv)
         encoded=next(a.split("=",1)[1] for a in argv if a.startswith("mcp_servers.workgraph.args="))
         args=json.loads(encoded)

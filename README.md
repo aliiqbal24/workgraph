@@ -57,6 +57,7 @@ From this checkout:
 ```bash
 python3 -m venv ~/.local/share/workgraph/runtime
 ~/.local/share/workgraph/runtime/bin/pip install '.[browser]'
+~/.local/share/workgraph/runtime/bin/python -m playwright install ffmpeg
 ~/.local/share/workgraph/runtime/bin/workgraph showcase
 ```
 
