@@ -1,0 +1,7 @@
+Source: https://github.com/aliiqbal24/workgraph
+Installable release: https://github.com/aliiqbal24/workgraph/releases/tag/v2.0.0
+Catalog PR: https://github.com/NousResearch/hermes-agent/pull/150453
+Demo file: https://github.com/aliiqbal24/workgraph/releases/download/v2.0.0/workgraph-launch-v4.mp4
+Entry form linked by the official announcement: https://form.typeform.com/to/FwJLvOln
+X post URL: pending user testing and posting
+Form submission: not sent

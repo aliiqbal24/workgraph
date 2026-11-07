@@ -9,6 +9,8 @@ another, and the way comments worked before either. Workgraph gives those moment
 a home: a visual tree of saved products you can recognize, open, branch, and keep
 working on.
 
+[Watch the 70-second launch film](https://github.com/aliiqbal24/workgraph/releases/download/v2.0.0/workgraph-launch-v4.mp4)
+
 ![A tree of actual saved products](docs/images/product-tree.png)
 
 - **See what a moment looked like.** Real desktop and phone screenshots, a gallery,

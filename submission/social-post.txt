@@ -1,7 +1,7 @@
 Your agent made it prettier. Did it keep working?
 
-Workgraph gives Hermes, Codex, and Claude Code a visual tree of working products: source + development data + context, actual screenshots, and replayable protected behaviors.
+Workgraph gives Hermes a visual tree of working products: branch from a moment, keep its data, borrow a feature, replay what matters.
 
-Borrow the board you like. Keep your filters, saved issues, and comments. Verify the result. Keep every direction.
-
-Local Linux developer preview. MIT licensed. Repo + demo links go here after publication.
+Real plugin. Real results. Open source.
+@NousResearch
+https://github.com/aliiqbal24/workgraph

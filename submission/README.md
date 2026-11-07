@@ -23,7 +23,9 @@ publication layer underneath.
 
 ## What the demo proves
 
-The 102-second narrated walkthrough shows actual UI operations with Relay, an
+The [70-second launch film](https://github.com/aliiqbal24/workgraph/releases/download/v2.0.0/workgraph-launch-v4.mp4) adds an original score, restrained Relay cameos, directed product shots, and an actual native Hermes close/reopen sequence. It shows actual saved results, not staged model execution. It stays below the official 90-second limit.
+
+The preserved 102-second narrated walkthrough shows actual UI operations with Relay, an
 original animated AI presenter. It shows seven versus eight saved issues, recording
 a reload/persistence expectation, a deliberately broken board's failed browser
 replay, and a real Codex-adapted board that keeps the target filter, eight issues,
@@ -66,5 +68,5 @@ The [official announcement](https://ca.linkedin.com/company/nousresearch) requir
 an X demo tagging `@NousResearch`, under 90 seconds, and the PR/demo links through
 the entry form by November 11, 2026 at 5 PM EST. The preserved 102-second walkthrough
 is a full product tour. The new launch cut is a separate production and submission
-asset. No X post or entry form has been sent; testing the actual installed product
+asset at `/home/ali/Videos/workgraph-launch-v4/`. No X post or entry form has been sent; testing the actual installed product
 can happen before those final steps.
