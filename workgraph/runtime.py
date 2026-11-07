@@ -62,6 +62,7 @@ class Instance:
     created: float = field(default_factory=time.time)
     touched: float = field(default_factory=time.time)
     closed: bool = False
+    preserve: bool = False
 
     def public(self):
         return {
@@ -132,7 +133,11 @@ class Runtimes:
                 if existing:
                     existing.touched = time.time()
                     return existing
-            alive = [x for x in self.instances.values() if not x.closed]
+            alive = [
+                x
+                for x in self.instances.values()
+                if not x.closed and x.status in ("preparing", "ready")
+            ]
             if len(alive) >= 4:
                 idle = sorted(
                     (x for x in alive if not x.fresh and time.time() - x.touched > 90),
@@ -144,7 +149,7 @@ class Runtimes:
                         "Four previews are in use. Close one before opening another.",
                     )
                 self.stop(idle[0].id)
-            hosts = {x.host for x in self.instances.values() if not x.closed}
+            hosts = {x.host for x in alive if not x.closed}
             host = next(h for h in self.HOSTS if h not in hosts)
             key = "runtime_" + secrets.token_hex(8)
             instance = Instance(
@@ -373,6 +378,8 @@ class Runtimes:
             if instance.proxy:
                 instance.proxy.shutdown()
                 instance.proxy.server_close()
+            if not instance.preserve:
+                shutil.rmtree(instance.root / "app", ignore_errors=True)
             if instance.status != "failed":
                 instance.status = "stopped"
 
@@ -572,10 +579,11 @@ class Runtimes:
             instance.touched = time.time()
             return instance
 
-    def stop(self, key):
+    def stop(self, key, preserve=False):
         with self.lock:
             instance = self.instances.get(key)
             if instance:
+                instance.preserve = instance.preserve or preserve
                 instance.closed = True
                 stop_group(instance.process)
         return {"id": key, "state": "stopped"}

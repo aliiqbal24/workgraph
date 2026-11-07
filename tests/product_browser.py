@@ -84,7 +84,17 @@ def run(output):
                     "Keep this little conversation."
                 ).wait_for()
                 before = ProductState(engine).get(original)["fingerprint"]
-                page.locator("#save-data").click()
+                page.evaluate(
+                    """()=>{const original=window.fetch.bind(window);window.fetch=async(...args)=>{const response=await original(...args);if(String(args[0]).includes('/api/studio'))await new Promise(r=>setTimeout(r,500));return response;};refresh();}"""
+                )
+                with page.expect_response(
+                    lambda r: (
+                        r.url.endswith("/api/action")
+                        and r.request.post_data_json.get("action") == "runtime.save"
+                    )
+                ) as saving:
+                    page.locator("#save-data").click()
+                save_request = saving.value.request.post_data_json
                 page.locator("#dialog").wait_for(state="hidden")
                 page.get_by_role(
                     "heading", name="An interactive exploration", exact=True
@@ -92,6 +102,19 @@ def run(output):
                 history = app.studio.history()
                 new = history["versions"][-1]["id"]
                 assert new != original
+                count = len(history["versions"])
+                assert (
+                    app.dispatch(
+                        {**save_request, "request_id": "duplicate-export-click"}
+                    )["revision"]
+                    == new
+                )
+                retained = app.runtimes.instances.pop(save_request["instance"])
+                try:
+                    assert app.dispatch(save_request)["revision"] == new
+                finally:
+                    app.runtimes.instances[save_request["instance"]] = retained
+                assert len(app.studio.history()["versions"]) == count
                 assert ProductState(engine).get(original)["fingerprint"] == before
                 assert ProductState(engine).get(new)["fingerprint"] != before
                 assert (
@@ -182,6 +205,8 @@ def run(output):
                 "source_unchanged_on_data_save": True,
                 "chosen_direction_unchanged": True,
                 "old_fixture_cannot_mask_broken_save": True,
+                "save_retries_create_one_version": True,
+                "save_during_background_refresh": True,
             }
             (output / "report.json").write_text(json.dumps(report, indent=2))
             print(json.dumps(report, indent=2))

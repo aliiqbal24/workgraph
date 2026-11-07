@@ -879,14 +879,21 @@ async function openLive(v, record = false) {
     });
   };
   $("#save-data").onclick = safely(async () => {
-    const r = await action("runtime.save", {
-      instance: state.instance.id,
-      name: "An interactive exploration",
-    });
-    closeDialog();
-    await refresh();
-    select(r.revision);
-    toast("Interactions saved as a new version. Your original is preserved.");
+    const button = $("#save-data");
+    button.disabled = true;
+    try {
+      const r = await action("runtime.save", {
+        instance: state.instance.id,
+        name: "An interactive exploration",
+      });
+      const stillHere = live === state;
+      if (stillHere) closeDialog();
+      await refresh();
+      if (stillHere) select(r.revision);
+      toast("Interactions saved as a new version. Your original is preserved.");
+    } finally {
+      if (button.isConnected) button.disabled = false;
+    }
   });
   if (record) $("#record-flow").click();
 }
@@ -972,8 +979,10 @@ function help() {
   );
   if ($("#stop-workspace")) $("#stop-workspace").onclick = stopWorkspaceForm;
 }
+const refreshWaiters = [];
 async function refresh() {
-  if (polling || workspaceStopped) return;
+  if (workspaceStopped) return;
+  if (polling) return new Promise((resolve) => refreshWaiters.push(resolve));
   polling = true;
   try {
     const next = await api("/api/studio");
@@ -1044,6 +1053,11 @@ async function refresh() {
     }
   } finally {
     polling = false;
+    if (refreshWaiters.length) {
+      const waiting = refreshWaiters.splice(0);
+      await refresh();
+      waiting.forEach((resolve) => resolve());
+    }
   }
 }
 $("#close-inspector").onclick = closeInspector;

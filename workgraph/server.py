@@ -145,42 +145,68 @@ class Application:
             self.artifacts.request(args["revision"])
             return result
         if action == "runtime.save":
-            instance = self.runtimes.instances.get(args["instance"])
-            if not instance:
-                raise WorkgraphError(
-                    "RUNTIME_NOT_FOUND", "This interactive copy is no longer available."
-                )
+            instance_key = args["instance"]
 
             def save(request):
-                self.runtimes.stop(instance.id)
-                result = self.studio.branch(
-                    instance.revision,
-                    args.get("name", "An interactive exploration"),
-                    request_id=request + ":branch",
-                )
-                ProductState(self.engine).copy_databases(
-                    instance.root / "app", Path(result["workspace"]), instance.profile
-                )
-                saved = self.engine.checkpoint(
-                    result["attempt"],
-                    args.get("name", "Saved interactions"),
-                    select=False,
-                    request_id=request + ":save",
-                )
-                self.engine.transition(result["attempt"], "paused")
-                self.artifacts.request(saved["revision"])
-                with self.engine.db() as db:
-                    return self.engine._finish(
-                        db,
-                        request,
-                        {**result, **saved},
-                        "product.interactions.saved",
-                        saved["revision"],
+                with self.runtimes.lock:
+                    instance = self.runtimes.instances.get(instance_key)
+                    if not instance:
+                        raise WorkgraphError(
+                            "RUNTIME_NOT_FOUND",
+                            "This interactive copy is no longer available.",
+                        )
+                    existing = getattr(instance, "export_result", None)
+                    if existing:
+                        with self.engine.db() as db:
+                            return self.engine._finish(
+                                db,
+                                request,
+                                existing,
+                                "product.interactions.reused",
+                                existing["revision"],
+                            )
+                    if not (instance.root / "app").is_dir():
+                        raise WorkgraphError(
+                            "RUNTIME_NOT_FOUND",
+                            "This disposable copy has closed. Open the saved version to explore again.",
+                        )
+                    self.runtimes.stop(instance.id, preserve=True)
+                    result = self.studio.branch(
+                        instance.revision,
+                        args.get("name", "An interactive exploration"),
+                        request_id=request + ":branch",
                     )
+                    ProductState(self.engine).copy_databases(
+                        instance.root / "app",
+                        Path(result["workspace"]),
+                        instance.profile,
+                    )
+                    saved = self.engine.checkpoint(
+                        result["attempt"],
+                        args.get("name", "Saved interactions"),
+                        select=False,
+                        request_id=request + ":save",
+                    )
+                    self.engine.transition(result["attempt"], "paused")
+                    with self.engine.db() as db:
+                        response = self.engine._finish(
+                            db,
+                            request,
+                            {**result, **saved},
+                            "product.interactions.saved",
+                            saved["revision"],
+                        )
+                    instance.export_result = response
+                    shutil.rmtree(instance.root / "app", ignore_errors=True)
+                    try:
+                        self.artifacts.request(saved["revision"])
+                    except WorkgraphError:
+                        pass  # Optional capture cannot invalidate a durable save.
+                    return response
 
             return self.engine._request(
                 "runtime.save",
-                {"instance": instance.id, "name": args.get("name")},
+                {"instance": instance_key, "name": args.get("name")},
                 save,
                 key,
                 exclusive=False,

@@ -301,6 +301,7 @@ class Artifacts:
             except queue.Empty:
                 continue
             revision = job["revision"]
+            directory = None
             instance = None
             try:
                 directory = self.home / "captures" / revision / uuid.uuid4().hex[:8]
@@ -452,6 +453,8 @@ class Artifacts:
             finally:
                 if instance:
                     self.runtimes.stop(instance.id)
+                if directory:
+                    shutil.rmtree(directory, ignore_errors=True)
                 with self.lock:
                     self.pending.discard(revision)
                 self.queue.task_done()

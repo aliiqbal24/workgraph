@@ -14,7 +14,8 @@ and an actual Codex task. No model success text is counted as behavior evidence.
   replay it, save interactive data as a new version, preserve the original database
   and exact source, leave the chosen direction unchanged, reload into the same camera
   and selection, open the saved replay, and reject writes through a viewing link.
-  Phone layout has no document overflow; no page errors occurred.
+  Save retries, including a missing live instance after a completed receipt, return
+  the same version. Phone layout has no document overflow; no page errors occurred.
 - A recorded expectation uses fresh test text. A deliberately broken descendant
   containing the old example text still fails that expectation. Existing data cannot
   supply the new replay's success text.

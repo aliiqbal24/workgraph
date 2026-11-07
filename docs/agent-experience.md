@@ -60,7 +60,9 @@ own runtime. Each version has a separate loopback browser host, ticketed path, a
 rewritten cookie namespace. Closing a dialog does not immediately destroy a copy;
 returning within its idle lifetime keeps exploration state. Saved originals never
 change. Explicit **Save interactions as a version** stops the app, snapshots its
-SQLite data into a new branch, and queues fresh captures.
+SQLite data into a new branch, and queues fresh captures. Repeated save clicks
+return the same result. Finished disposable source copies and capture scratch files
+are cleaned up; immutable source, database snapshots, and media remain.
 
 Record a behavior by performing steps, reloading if relevant, selecting expected
 visible text, and naming the expectation. Password input is omitted. Recordings use
